@@ -14,11 +14,12 @@ export async function signUpAction(formData: FormData) {
     return { error: 'All fields are required.' };
   }
 
-  // Generate a URL-friendly slug from the business name
-  const slug = businessName
+  // Generate a URL-friendly unique slug from the business name
+  const baseSlug = businessName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
+  const slug = `${baseSlug}-${crypto.randomBytes(3).toString('hex')}`;
 
   const supabase = await createServerClient();
   const adminSupabase = createAdminClient();
