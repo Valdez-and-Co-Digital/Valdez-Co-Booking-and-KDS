@@ -14,15 +14,17 @@ export async function POST(req: NextRequest) {
     const supabase = createAdminClient();
 
     // 1. Fetch Invoice and Client Details
-    const { data: invoice, error: invoiceError } = await supabase
+    const { data: invoiceRaw, error: invoiceError } = await supabase
       .from('invoices')
       .select('*, client:clients(*), tenant:tenants(name, stripe_account_id)')
       .eq('id', invoice_id)
       .single();
 
-    if (invoiceError || !invoice) {
+    if (invoiceError || !invoiceRaw) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
+
+    const invoice = invoiceRaw as any;
 
     // 2. Check if Stripe Account is connected (for Destination Charges if applicable)
     // For this example, we assume we might create a direct Payment Link.
