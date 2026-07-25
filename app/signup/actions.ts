@@ -9,8 +9,9 @@ export async function signUpAction(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const businessName = formData.get('businessName') as string;
+  const businessType = formData.get('businessType') as string;
   
-  if (!email || !password || !businessName) {
+  if (!email || !password || !businessName || !businessType) {
     return { error: 'All fields are required.' };
   }
 
@@ -50,8 +51,8 @@ export async function signUpAction(formData: FormData) {
       name: businessName,
       slug: slug,
       settings: {
-        is_salon: false,
-        is_foodtruck: false, // Defaulting to generic/agency mode
+        is_salon: businessType === 'salon',
+        is_foodtruck: businessType === 'foodtruck',
       },
     });
 

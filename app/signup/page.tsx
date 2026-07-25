@@ -67,6 +67,24 @@ export default function SignupPage() {
             </div>
 
             <div>
+              <label htmlFor="businessType" className="block text-sm font-medium text-zinc-300">
+                Business Type
+              </label>
+              <div className="mt-1">
+                <select
+                  id="businessType"
+                  name="businessType"
+                  required
+                  className="block w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors sm:text-sm"
+                >
+                  <option value="" disabled selected>Select your industry</option>
+                  <option value="salon">Salon / Barbershop</option>
+                  <option value="foodtruck">Food Truck / Quick Serve</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
                 Email address
               </label>

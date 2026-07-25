@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Zap, Calendar, ClipboardList,
-  Settings, MapPin, CreditCard, LogOut, Menu, X, Bell,
-  Users, FileText
+  LayoutDashboard, Zap, Users, LogOut, Menu, Bell
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,28 +13,10 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const salonNavItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { href: '/dashboard/calendar', icon: Calendar, label: 'Calendar' },
-  { href: '/dashboard/appointments', icon: ClipboardList, label: 'Appointments' },
-  { href: '/dashboard/services', icon: Zap, label: 'Services' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-];
-
-const foodTruckNavItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { href: '/dashboard/kds', icon: ClipboardList, label: 'KDS Board' },
-  { href: '/dashboard/location', icon: MapPin, label: 'Go Live' },
-  { href: '/dashboard/quick-charge', icon: CreditCard, label: 'Quick Charge' },
-  { href: '/dashboard/services', icon: Zap, label: 'Menu' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-];
-
-const agencyNavItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { href: '/dashboard/clients', icon: Users, label: 'Clients (CRM)' },
-  { href: '/dashboard/invoices', icon: FileText, label: 'Invoices' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+const unifiedNavItems = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Command Center' },
+  { href: '/dashboard/services', icon: Zap, label: 'Service & Menu Manager' },
+  { href: '/dashboard/clients', icon: Users, label: 'Customer Log' },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -46,9 +26,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [tenantType, setTenantType] = useState<'salon' | 'foodtruck' | 'agency' | null>(null);
   const [tenantName, setTenantName] = useState('');
 
-  const navItems = tenantType === 'foodtruck' ? foodTruckNavItems 
-                 : tenantType === 'agency' ? agencyNavItems 
-                 : salonNavItems;
+  const navItems = unifiedNavItems;
 
   useEffect(() => {
     // Load tenant context
