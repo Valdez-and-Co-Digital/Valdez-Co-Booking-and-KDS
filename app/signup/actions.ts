@@ -3,7 +3,7 @@
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
 export async function signUpAction(formData: FormData) {
   const email = formData.get('email') as string;
@@ -39,7 +39,7 @@ export async function signUpAction(formData: FormData) {
   }
 
   // 2. Bypass RLS to create the Tenant and AdminUser link
-  const tenantId = uuidv4();
+  const tenantId = crypto.randomUUID();
 
   // Create Tenant
   const { error: tenantError } = await adminSupabase
