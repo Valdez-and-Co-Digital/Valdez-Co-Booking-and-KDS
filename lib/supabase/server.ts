@@ -8,8 +8,8 @@ import type { Database } from '@/types/database';
  * Uses the user's session cookie — RLS is enforced.
  * Use in Server Components, Route Handlers, and Server Actions.
  */
-export function createServerClient() {
-  const cookieStore = cookies();
+export async function createServerClient() {
+  const cookieStore = await cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
