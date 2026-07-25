@@ -76,6 +76,6 @@ export async function signUpAction(formData: FormData) {
     return { error: 'Account created, but failed to link to business.' };
   }
 
-  revalidatePath('/dashboard');
-  redirect('/dashboard');
+  revalidatePath('/onboarding');
+  redirect('/onboarding');
 }
