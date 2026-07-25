@@ -57,7 +57,7 @@ export async function signUpAction(formData: FormData) {
 
   if (tenantError) {
     console.error('Tenant creation failed:', tenantError);
-    return { error: 'Account created, but failed to setup business workspace.' };
+    return { error: `Workspace setup failed: ${tenantError.message}` };
   }
 
   // Create Admin User link
