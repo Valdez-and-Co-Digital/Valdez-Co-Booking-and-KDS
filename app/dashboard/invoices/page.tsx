@@ -16,6 +16,7 @@ export default function InvoicesPage() {
   const [newClientId, setNewClientId] = useState('');
   const [newAmount, setNewAmount] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const supabase = createBrowserClient();
@@ -68,7 +69,8 @@ export default function InvoicesPage() {
         client_id: newClientId,
         amount_cents: Math.round(parseFloat(newAmount) * 100),
         description: newDesc,
-        status: 'draft'
+        status: 'draft',
+        notes: isRecurring ? JSON.stringify({ is_recurring: true }) : null
       })
       .select('*, client:clients(name)')
       .single();
@@ -76,7 +78,7 @@ export default function InvoicesPage() {
     if (newInvoice && !error) {
       setInvoices([newInvoice, ...invoices]);
       setIsAdding(false);
-      setNewClientId(''); setNewAmount(''); setNewDesc('');
+      setNewClientId(''); setNewAmount(''); setNewDesc(''); setIsRecurring(false);
     } else {
       console.error(error);
       alert('Failed to create invoice.');
@@ -138,6 +140,16 @@ export default function InvoicesPage() {
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1">Amount ($ USD)</label>
               <input required type="number" step="0.01" min="1" value={newAmount} onChange={e => setNewAmount(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="1500.00" />
+            </div>
+            <div className="md:col-span-3 flex items-center gap-2 mt-2">
+              <input 
+                type="checkbox" 
+                id="isRecurring" 
+                checked={isRecurring} 
+                onChange={e => setIsRecurring(e.target.checked)} 
+                className="rounded border-white/10 bg-black/40 text-blue-500 focus:ring-blue-500"
+              />
+              <label htmlFor="isRecurring" className="text-sm font-medium text-zinc-300">Make this a recurring monthly subscription</label>
             </div>
           </div>
           <div className="flex justify-end pt-2">

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { format, startOfDay, endOfDay, isSameDay, parseISO } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Clock, User, Phone, DollarSign } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Clock, User, Phone, DollarSign, Plus } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { DaySchedule } from './DaySchedule';
+import { NewAppointmentForm } from './NewAppointmentForm';
 import * as Dialog from '@radix-ui/react-dialog';
 import 'react-day-picker/dist/style.css';
 
@@ -33,34 +34,35 @@ export function CalendarView({ tenantId, businessHours }: CalendarViewProps) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
+  const [isNewFormOpen, setIsNewFormOpen] = useState(false);
   const supabase = createBrowserClient();
 
+  const fetchAppointments = useCallback(async () => {
+    setIsLoading(true);
+    const start = startOfDay(selectedDate).toISOString();
+    const end = endOfDay(selectedDate).toISOString();
+
+    const { data, error } = await supabase
+      .from('orders_appointments')
+      .select('*')
+      .gte('slot_start', start)
+      .lte('slot_start', end)
+      .order('slot_start', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching appointments:', error);
+    } else {
+      setAppointments(data as Appointment[]);
+    }
+    setIsLoading(false);
+  }, [selectedDate, supabase]);
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      setIsLoading(true);
-      const start = startOfDay(selectedDate).toISOString();
-      const end = endOfDay(selectedDate).toISOString();
-
-      const { data, error } = await supabase
-        .from('orders_appointments')
-        .select('*')
-        .gte('slot_start', start)
-        .lte('slot_start', end)
-        .order('slot_start', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching appointments:', error);
-      } else {
-        setAppointments(data as Appointment[]);
-      }
-      setIsLoading(false);
-    };
-
     fetchAppointments();
 
-    // Set up realtime subscription for this specific day
-    const subscription = supabase
-      .channel('calendar-updates')
+    const channelName = `calendar-updates-${tenantId}`;
+    const channel = supabase
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -68,18 +70,16 @@ export function CalendarView({ tenantId, businessHours }: CalendarViewProps) {
           schema: 'public',
           table: 'orders_appointments',
         },
-        (payload) => {
-          // Simplest approach: refetch when any appointment changes.
-          // Since it's a small dataset per day, refetching is fine and ensures data integrity.
+        () => {
           fetchAppointments();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channel);
     };
-  }, [selectedDate, supabase]);
+  }, [tenantId, fetchAppointments, supabase]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -160,10 +160,19 @@ export function CalendarView({ tenantId, businessHours }: CalendarViewProps) {
         {/* Main Schedule View */}
         <div className="flex-1 glass-card rounded-xl overflow-hidden flex flex-col min-w-[300px]">
           <div className="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#09090b]/80 backdrop-blur-md z-20">
-            <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-violet-400" />
-              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-            </h2>
+            <div className="flex items-center gap-4">
+              <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-violet-400" />
+                {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              </h2>
+              <button
+                onClick={() => setIsNewFormOpen(true)}
+                className="bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+              >
+                <Plus className="w-4 h-4" />
+                Book Appointment
+              </button>
+            </div>
             <div className="flex gap-2">
               <button 
                 onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 86400000))}
@@ -202,6 +211,16 @@ export function CalendarView({ tenantId, businessHours }: CalendarViewProps) {
           </div>
         </div>
       </div>
+
+      <NewAppointmentForm 
+        tenantId={tenantId}
+        isOpen={isNewFormOpen}
+        onClose={() => setIsNewFormOpen(false)}
+        onSuccess={() => {
+          fetchAppointments(); // Re-fetch immediately in case realtime is delayed
+        }}
+        selectedDate={selectedDate}
+      />
 
       {/* Appointment Details Modal */}
       <Dialog.Root open={!!selectedApt} onOpenChange={(open) => !open && setSelectedApt(null)}>

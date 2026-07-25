@@ -32,10 +32,15 @@ export async function POST(req: NextRequest) {
     // Assuming standard platform setup:
     const stripeAccountId = invoice.tenant.stripe_account_id;
 
-    // 3. Create a Stripe Price (inline for the payment link)
-    // Or just create a Checkout Session directly. Checkout Session is easier to generate on the fly.
-    // However, the user asked for a "Payment Link" which is reusable. We will use a Checkout Session URL here 
-    // for a one-off invoice payment.
+    let isRecurring = false;
+    try {
+      if (invoice.notes) {
+        const notesObj = JSON.parse(invoice.notes);
+        isRecurring = notesObj.is_recurring === true;
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
     
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
@@ -45,14 +50,15 @@ export async function POST(req: NextRequest) {
             currency: 'usd',
             product_data: {
               name: invoice.description,
-              description: `Invoice for ${invoice.client.name}`,
+              description: `Invoice for ${invoice.client.name}${isRecurring ? ' (Monthly)' : ''}`,
             },
             unit_amount: invoice.amount_cents,
+            ...(isRecurring ? { recurring: { interval: 'month' } } : {})
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: isRecurring ? 'subscription' : 'payment',
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?invoice_id=${invoice.id}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled?invoice_id=${invoice.id}`,
       customer_email: invoice.client.email || undefined,
@@ -65,13 +71,22 @@ export async function POST(req: NextRequest) {
     };
 
     if (stripeAccountId) {
-      sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(invoice.amount_cents * 0.01), // 1% platform fee
-        transfer_data: {
-          destination: stripeAccountId,
-        },
-        on_behalf_of: stripeAccountId,
-      };
+      if (isRecurring) {
+        sessionParams.subscription_data = {
+          application_fee_percent: 1.0, // 1% platform fee
+          transfer_data: {
+            destination: stripeAccountId,
+          },
+        };
+      } else {
+        sessionParams.payment_intent_data = {
+          application_fee_amount: Math.round(invoice.amount_cents * 0.01), // 1% platform fee
+          transfer_data: {
+            destination: stripeAccountId,
+          },
+          on_behalf_of: stripeAccountId,
+        };
+      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

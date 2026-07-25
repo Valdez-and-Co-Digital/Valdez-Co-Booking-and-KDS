@@ -1,8 +1,8 @@
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { CommandCenter } from '@/components/dashboard/CommandCenter';
+import { CalendarView } from '@/components/calendar/CalendarView';
 
-export default async function DashboardOverviewPage() {
+export default async function CalendarPage() {
   const supabase = await createServerClient();
   const adminSupabase = createAdminClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -11,7 +11,6 @@ export default async function DashboardOverviewPage() {
     redirect('/login');
   }
 
-  // Fetch user's tenant connection using admin client to bypass RLS delay
   const { data: adminUser } = await adminSupabase
     .from('admin_users')
     .select('tenant:tenants(id, name, settings)')
@@ -25,11 +24,7 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div className="h-[calc(100vh-5rem)]">
-      <CommandCenter 
-        tenantId={tenant.id} 
-        defaultIsFoodTruck={!!tenant.settings?.is_foodtruck}
-        businessHours={tenant.settings?.business_hours} 
-      />
+      <CalendarView tenantId={tenant.id} businessHours={tenant.settings?.business_hours} />
     </div>
   );
 }

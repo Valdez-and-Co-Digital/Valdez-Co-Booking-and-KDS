@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Zap, Users, LogOut, Menu, Bell
+  LayoutDashboard, Zap, Users, LogOut, Menu, Bell, FileText, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,8 +15,10 @@ interface AdminLayoutProps {
 
 const unifiedNavItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Command Center' },
+  { href: '/dashboard/calendar', icon: Calendar, label: 'Appointments & Calendar' },
   { href: '/dashboard/services', icon: Zap, label: 'Service & Menu Manager' },
   { href: '/dashboard/clients', icon: Users, label: 'Customer Log' },
+  { href: '/dashboard/invoices', icon: FileText, label: 'Invoices & Billing' },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {

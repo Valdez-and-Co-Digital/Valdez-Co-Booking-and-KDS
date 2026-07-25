@@ -5,7 +5,8 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import { useOrdersStore, useOrdersByStatus } from '@/lib/store/orders';
 import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
 import { KDSTicket } from '@/components/kds/KDSTicket';
-import { WifiOff, Zap } from 'lucide-react';
+import { NewOrderForm } from '@/components/kds/NewOrderForm';
+import { WifiOff, Zap, Plus } from 'lucide-react';
 import type { Order } from '@/types/database';
 
 interface KDSBoardProps {
@@ -93,6 +94,7 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
   const supabase = createBrowserClient();
   const { setOrders, updateOrder, setLoading } = useOrdersStore();
   const [isConnected, setIsConnected] = useState(false);
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -139,41 +141,61 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
   };
 
   return (
-    <div className="h-full flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Kitchen Display System</h1>
-          <p className="text-sm text-zinc-400 mt-0.5">Live order queue & prep timers</p>
+    <>
+      <div className="h-full flex flex-col gap-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="font-display text-2xl font-bold">Kitchen Display System</h1>
+              <p className="text-sm text-zinc-400 mt-0.5">Live order queue & prep timers</p>
+            </div>
+            <button
+              onClick={() => setIsNewOrderOpen(true)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] ml-4"
+            >
+              <Plus className="w-4 h-4" />
+              New Order
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            {isConnected ? (
+              <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Live Sync Active
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <WifiOff className="w-3.5 h-3.5" />
+                Connecting…
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {isConnected ? (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Live Sync Active
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-              <WifiOff className="w-3.5 h-3.5" />
-              Connecting…
-            </span>
-          )}
+
+        {/* Kanban Columns */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+          {COLUMNS.map(({ status, label, color }) => (
+            <KDSColumn
+              key={status}
+              status={status}
+              label={label}
+              color={color}
+              onStatusChange={handleStatusChange}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Kanban Columns */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
-        {COLUMNS.map(({ status, label, color }) => (
-          <KDSColumn
-            key={status}
-            status={status}
-            label={label}
-            color={color}
-            onStatusChange={handleStatusChange}
-          />
-        ))}
-      </div>
-    </div>
+      <NewOrderForm 
+        tenantId={tenantId}
+        isOpen={isNewOrderOpen}
+        onClose={() => setIsNewOrderOpen(false)}
+        onSuccess={() => {
+          // In a real app we might refetch, but realtime should handle it
+        }}
+      />
+    </>
   );
 }
 
