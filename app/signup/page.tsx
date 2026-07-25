@@ -1,36 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createBrowserClient } from '@/lib/supabase/client';
-import { Zap, LogIn, Loader2 } from 'lucide-react';
+import { Zap, UserPlus, Loader2 } from 'lucide-react';
+import { signUpAction } from './actions';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const router = useRouter();
-  const supabase = createBrowserClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const formData = new FormData(e.currentTarget);
+    const result = await signUpAction(formData);
 
-    if (error) {
-      setError(error.message);
+    // If we reach here and there is a result, it means it returned an error
+    // (A successful signup triggers a redirect in the server action)
+    if (result?.error) {
+      setError(result.error);
       setLoading(false);
-    } else {
-      router.push('/dashboard');
-      router.refresh();
     }
   };
 
@@ -43,22 +34,38 @@ export default function LoginPage() {
           </div>
         </div>
         <h2 className="mt-2 text-center text-3xl font-display font-bold text-white tracking-tight">
-          Sign in to SwiftKDS
+          Create an Account
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
-          Manage your business, clients, and orders.
+          Start managing your business with SwiftKDS.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in" style={{ animationDelay: '100ms' }}>
         <div className="glass-card py-8 px-4 sm:px-10 border-white/10 shadow-2xl shadow-black/50">
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                 {error}
               </div>
             )}
-            
+
+            <div>
+              <label htmlFor="businessName" className="block text-sm font-medium text-zinc-300">
+                Business Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="businessName"
+                  name="businessName"
+                  type="text"
+                  required
+                  className="block w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 placeholder-zinc-500 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors sm:text-sm"
+                  placeholder="Acme Bakery"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
                 Email address
@@ -70,10 +77,8 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   className="block w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 placeholder-zinc-500 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors sm:text-sm"
-                  placeholder="admin@valdez.co"
+                  placeholder="admin@acme.com"
                 />
               </div>
             </div>
@@ -87,10 +92,8 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="block w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 placeholder-zinc-500 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors sm:text-sm"
                   placeholder="••••••••"
                 />
@@ -103,17 +106,17 @@ export default function LoginPage() {
                 disabled={loading}
                 className="btn-glow flex w-full justify-center items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </button>
             </div>
           </form>
           
           <div className="mt-6 border-t border-white/5 pt-6 flex flex-col items-center gap-2">
             <p className="text-center text-sm text-zinc-400">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-violet-400 hover:text-violet-300 font-semibold transition-colors">
-                Sign up
+              Already have an account?{' '}
+              <Link href="/login" className="text-violet-400 hover:text-violet-300 font-semibold transition-colors">
+                Log in
               </Link>
             </p>
             <p className="text-center text-xs text-zinc-500 mt-2">
