@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
+import { Analytics } from "@vercel/analytics/react";
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="bg-mesh antialiased" suppressHydrationWarning>
         {children}
+        <Analytics />
       </body>
     </html>
   );

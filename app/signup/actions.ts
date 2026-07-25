@@ -76,6 +76,10 @@ export async function signUpAction(formData: FormData) {
     return { error: 'Account created, but failed to link to business.' };
   }
 
+  // Force a JWT refresh so the custom Auth Hook sees the new admin_users record
+  // and stamps the tenant_id onto the user's token immediately.
+  await supabase.auth.refreshSession();
+
   revalidatePath('/onboarding');
   redirect('/onboarding');
 }

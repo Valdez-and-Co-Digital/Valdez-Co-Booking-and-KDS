@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -18,14 +18,15 @@ export async function completeOnboardingAction(formData: FormData) {
   }
 
   const supabase = await createServerClient();
+  const adminSupabase = createAdminClient();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
     return { error: 'Not authenticated.' };
   }
 
-  // 1. Fetch user's tenant ID and current settings
-  const { data: adminUser } = await supabase
+  // 1. Fetch user's tenant ID and current settings using admin client to bypass RLS delay
+  const { data: adminUser } = await adminSupabase
     .from('admin_users')
     .select('tenant_id, tenant:tenants(settings)')
     .eq('user_id', session.user.id)
@@ -42,8 +43,8 @@ export async function completeOnboardingAction(formData: FormData) {
     tax_rate: taxRate
   };
 
-  // 2. Update the tenant settings
-  const { error: updateError } = await supabase
+  // 2. Update the tenant settings using admin client
+  const { error: updateError } = await adminSupabase
     .from('tenants')
     .update({ settings: updatedSettings })
     .eq('id', adminUser.tenant_id);
@@ -52,6 +53,9 @@ export async function completeOnboardingAction(formData: FormData) {
     console.error('Failed to update tenant settings:', updateError);
     return { error: 'Failed to save business settings.' };
   }
+
+  // Double-check the token is refreshed so the user enters the dashboard with full RLS permissions
+  await supabase.auth.refreshSession();
 
   revalidatePath('/dashboard');
   redirect('/dashboard');
