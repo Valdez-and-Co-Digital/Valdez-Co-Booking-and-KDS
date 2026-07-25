@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { X, Loader2, Plus, Minus } from 'lucide-react';

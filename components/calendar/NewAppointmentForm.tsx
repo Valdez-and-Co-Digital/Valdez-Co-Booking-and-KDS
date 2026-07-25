@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { CalendarIcon, X, Loader2, Repeat, Clock } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
