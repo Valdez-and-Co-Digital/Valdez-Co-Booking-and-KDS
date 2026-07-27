@@ -169,7 +169,6 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               label={label}
               color={color}
               onStatusChange={handleStatusChange}
-              onDelay={handleDelay}
               diningFilter={diningFilter}
               warningMins={tenantSettings?.kds_warning_mins}
               overdueMins={tenantSettings?.kds_overdue_mins}
