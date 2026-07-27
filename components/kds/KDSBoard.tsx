@@ -13,76 +13,6 @@ interface KDSBoardProps {
   tenantId: string;
 }
 
-const MOCK_PREVIEW_ORDERS: Order[] = [
-  {
-    id: 'a1b2c3d4-0001-4000-8000-000000000001',
-    tenant_id: 'b0000000-0000-0000-0000-000000000002',
-    customer_name: 'Marcus Johnson',
-    customer_email: 'marcus@example.com',
-    customer_phone: '512-555-0192',
-    slot_start: new Date().toISOString(),
-    slot_end: new Date(Date.now() + 15 * 60000).toISOString(),
-    cart_items: [
-      { service_id: 'f1', name: 'Birria Tacos (3)', price_cents: 1299, prep_time_minutes: 8, quantity: 2 },
-      { service_id: 'f5', name: 'Fresh Horchata (L)', price_cents: 499, prep_time_minutes: 1, quantity: 1 },
-    ],
-    total_cents: 3097,
-    status: 'confirmed',
-    notes: 'Extra consommé please!',
-    stripe_payment_intent_id: 'pi_mock_001',
-    stripe_transfer_id: null,
-    payment_status: 'paid',
-    stripe_terminal_payment_id: null,
-    ordered_at: new Date(Date.now() - 3 * 60000).toISOString(), // 3 mins ago
-    updated_at: new Date().toISOString(),
-    completed_at: null,
-  },
-  {
-    id: 'a1b2c3d4-0002-4000-8000-000000000002',
-    tenant_id: 'b0000000-0000-0000-0000-000000000002',
-    customer_name: 'Sarah Lopez',
-    customer_email: 'sarah@example.com',
-    customer_phone: '512-555-0144',
-    slot_start: new Date().toISOString(),
-    slot_end: new Date(Date.now() + 15 * 60000).toISOString(),
-    cart_items: [
-      { service_id: 'f3', name: 'Quesabirria Special', price_cents: 1499, prep_time_minutes: 10, quantity: 1 },
-    ],
-    total_cents: 1499,
-    status: 'in_progress',
-    notes: 'No cilantro on quesabirria',
-    stripe_payment_intent_id: 'pi_mock_002',
-    stripe_transfer_id: null,
-    payment_status: 'paid',
-    stripe_terminal_payment_id: null,
-    ordered_at: new Date(Date.now() - 12 * 60000).toISOString(), // 12 mins ago
-    updated_at: new Date().toISOString(),
-    completed_at: null,
-  },
-  {
-    id: 'a1b2c3d4-0003-4000-8000-000000000003',
-    tenant_id: 'b0000000-0000-0000-0000-000000000003',
-    customer_name: 'David Wright',
-    customer_email: 'david@example.com',
-    customer_phone: '512-555-0177',
-    slot_start: new Date().toISOString(),
-    slot_end: new Date(Date.now() + 15 * 60000).toISOString(),
-    cart_items: [
-      { service_id: 'f2', name: 'Al Pastor Tacos (3)', price_cents: 1099, prep_time_minutes: 5, quantity: 2 },
-      { service_id: 'f4', name: 'Loaded Nachos', price_cents: 1099, prep_time_minutes: 7, quantity: 1 },
-    ],
-    total_cents: 3297,
-    status: 'ready',
-    notes: null,
-    stripe_payment_intent_id: 'pi_mock_003',
-    stripe_transfer_id: null,
-    payment_status: 'paid',
-    stripe_terminal_payment_id: null,
-    ordered_at: new Date(Date.now() - 21 * 60000).toISOString(), // 21 mins ago
-    updated_at: new Date().toISOString(),
-    completed_at: null,
-  },
-];
 
 const COLUMNS: { status: Order['status']; label: string; color: string }[] = [
   { status: 'confirmed',   label: 'New Orders',  color: 'border-blue-500/30' },
@@ -117,17 +47,12 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
       .not('status', 'in', '("completed","cancelled","no_show")')
       .order('ordered_at', { ascending: false })
       .then(({ data }: { data: Order[] | null }) => {
-        if (data && data.length > 0) {
-          setOrders(data);
-        } else {
-          // Preview fallback mode with interactive mock tickets
-          setOrders(MOCK_PREVIEW_ORDERS);
-        }
+        setOrders(data || []);
         setLoading(false);
         setIsConnected(true);
       })
       .catch(() => {
-        setOrders(MOCK_PREVIEW_ORDERS);
+        setOrders([]);
         setLoading(false);
         setIsConnected(true);
       });
