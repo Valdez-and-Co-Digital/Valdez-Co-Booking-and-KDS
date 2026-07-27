@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Plus, Trash2, Edit2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
-import { createServiceAction, deleteServiceAction, toggleServiceAction } from './actions';
+import { createServiceAction, deleteServiceAction, toggleServiceAction, updateServiceAction } from './actions';
 
 export function ServiceList({ initialServices, isSalon }: { initialServices: any[], isSalon: boolean }) {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Using Next.js Server Actions automatically revalidates and refreshes the page component, 
   // but we'll show loading states during transitions.
@@ -24,6 +25,22 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
       setError(result.error);
     } else {
       setIsCreating(false);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    formData.append('isSalon', String(isSalon));
+
+    const result = await updateServiceAction(id, formData);
+    if (result?.error) {
+      setError(result.error);
+    } else {
+      setEditingId(null);
     }
     setLoading(false);
   };
@@ -94,6 +111,40 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
         )}
         
         {initialServices.map((service) => (
+          editingId === service.id ? (
+            <div key={service.id} className="glass-card p-5 animate-fade-in border-violet-500/30">
+              <form onSubmit={(e) => handleUpdate(e, service.id)} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-300">Name</label>
+                    <input name="name" required defaultValue={service.name} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-300">Price (USD)</label>
+                    <input name="price" type="number" step="0.01" min="0" required defaultValue={(service.price_cents / 100).toFixed(2)} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-300">Description</label>
+                  <textarea name="description" defaultValue={service.description || ''} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white h-16" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-300">{isSalon ? 'Duration (Minutes)' : 'Prep Time (Minutes)'}</label>
+                  <input name="timeValue" type="number" min="1" required defaultValue={isSalon ? service.duration_minutes : service.prep_time_minutes} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+                  <button type="button" onClick={() => setEditingId(null)} className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                  <button type="submit" disabled={loading} className="btn-glow rounded-lg px-3 py-1.5 text-xs font-semibold text-white flex items-center gap-2 disabled:opacity-50">
+                    {loading && <Loader2 className="w-3 h-3 animate-spin" />}
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
           <div key={service.id} className="glass-card p-5 space-y-4 relative group">
             <div className="flex justify-between items-start">
               <div>
@@ -116,12 +167,16 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
                 {isSalon ? `⏱️ ${service.duration_minutes} min` : `🍳 ${service.prep_time_minutes} min prep`}
               </span>
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => setEditingId(service.id)} className="p-1.5 text-zinc-400 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-colors">
+                  <Edit2 className="w-4 h-4" />
+                </button>
                 <button onClick={() => handleDelete(service.id)} className="p-1.5 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
           </div>
+          )
         ))}
       </div>
     </div>
