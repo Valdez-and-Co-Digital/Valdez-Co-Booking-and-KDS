@@ -71,7 +71,7 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
           <form onSubmit={handleCreate} className="space-y-4">
             {error && <div className="text-red-400 text-sm p-2 bg-red-500/10 rounded">{error}</div>}
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300">Name</label>
                 <input name="name" required className="mt-1 block w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white" placeholder={isSalon ? "Women's Haircut" : "Spicy Taco"} />
@@ -79,6 +79,10 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
               <div>
                 <label className="block text-sm font-medium text-zinc-300">Price (USD)</label>
                 <input name="price" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white" placeholder="25.00" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300">Category</label>
+                <input name="category" required defaultValue="General" className="mt-1 block w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white" placeholder={isSalon ? "Hair" : "Mains"} />
               </div>
             </div>
 
@@ -114,7 +118,7 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
           editingId === service.id ? (
             <div key={service.id} className="glass-card p-5 animate-fade-in border-violet-500/30">
               <form onSubmit={(e) => handleUpdate(e, service.id)} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-zinc-300">Name</label>
                     <input name="name" required defaultValue={service.name} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
@@ -122,6 +126,10 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
                   <div>
                     <label className="block text-xs font-medium text-zinc-300">Price (USD)</label>
                     <input name="price" type="number" step="0.01" min="0" required defaultValue={(service.price_cents / 100).toFixed(2)} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-300">Category</label>
+                    <input name="category" required defaultValue={service.category || 'General'} className="mt-1 block w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
                   </div>
                 </div>
 
@@ -148,7 +156,12 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
           <div key={service.id} className="glass-card p-5 space-y-4 relative group">
             <div className="flex justify-between items-start">
               <div>
-                <h4 className="font-display font-semibold text-lg">{service.name}</h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-display font-semibold text-lg">{service.name}</h4>
+                  <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[10px] font-medium text-zinc-400 uppercase tracking-wider">
+                    {service.category || 'General'}
+                  </span>
+                </div>
                 <p className="text-violet-400 font-mono font-medium">${(service.price_cents / 100).toFixed(2)}</p>
               </div>
               <button 

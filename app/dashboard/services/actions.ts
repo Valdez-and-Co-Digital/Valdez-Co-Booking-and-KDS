@@ -21,6 +21,7 @@ export async function createServiceAction(formData: FormData) {
   const price = parseFloat(formData.get('price') as string);
   const isSalon = formData.get('isSalon') === 'true';
   const timeValue = parseInt(formData.get('timeValue') as string);
+  const category = formData.get('category') as string || 'General';
 
   if (!name || isNaN(price) || isNaN(timeValue)) {
     return { error: 'Please provide all required fields.' };
@@ -33,6 +34,7 @@ export async function createServiceAction(formData: FormData) {
     price_cents: Math.round(price * 100),
     duration_minutes: isSalon ? timeValue : null,
     prep_time_minutes: !isSalon ? timeValue : null,
+    category,
     is_active: true
   });
 
@@ -68,6 +70,7 @@ export async function updateServiceAction(serviceId: string, formData: FormData)
   const price = parseFloat(formData.get('price') as string);
   const isSalon = formData.get('isSalon') === 'true';
   const timeValue = parseInt(formData.get('timeValue') as string);
+  const category = formData.get('category') as string || 'General';
 
   if (!name || isNaN(price) || isNaN(timeValue)) {
     return { error: 'Please provide all required fields.' };
@@ -79,6 +82,7 @@ export async function updateServiceAction(serviceId: string, formData: FormData)
     price_cents: Math.round(price * 100),
     duration_minutes: isSalon ? timeValue : null,
     prep_time_minutes: !isSalon ? timeValue : null,
+    category,
   }).eq('id', serviceId);
 
   if (error) return { error: error.message };
