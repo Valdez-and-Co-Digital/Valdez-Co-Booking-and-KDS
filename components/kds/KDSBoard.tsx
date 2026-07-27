@@ -73,14 +73,24 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
     }
   };
 
-  const handleDelay = async (orderId: string, minutes: number, currentOrderedAt: string) => {
-    const newOrderedAt = new Date(new Date(currentOrderedAt).getTime() + minutes * 60000).toISOString();
-    updateOrder({ id: orderId, ordered_at: newOrderedAt });
+  const handleDelayAll = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const minutes = parseInt(e.target.value);
+    if (!minutes || isNaN(minutes)) return;
+    e.target.value = ""; // reset dropdown
+    
+    const activeOrders = useOrdersStore.getState().orders.filter(
+      o => ['pending', 'confirmed', 'in_progress'].includes(o.status) && (o as any).tenant_id === tenantId
+    );
+    if (activeOrders.length === 0) return;
+
+    const updates = activeOrders.map(order => {
+      const newOrderedAt = new Date(new Date(order.ordered_at).getTime() + minutes * 60000).toISOString();
+      updateOrder({ id: order.id, ordered_at: newOrderedAt });
+      return supabase.from('orders_appointments').update({ ordered_at: newOrderedAt }).eq('id', order.id);
+    });
+
     try {
-      await supabase
-        .from('orders_appointments')
-        .update({ ordered_at: newOrderedAt })
-        .eq('id', orderId);
+      await Promise.all(updates);
     } catch {}
   };
 
@@ -118,18 +128,35 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               New Order
             </button>
           </div>
-          <div className="flex items-center gap-3">
-            {isConnected ? (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Live Sync Active
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-                <WifiOff className="w-3.5 h-3.5" />
-                Connecting…
-              </span>
-            )}
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-3">
+              {/* Delay Dropdown */}
+              <div className="flex items-center gap-2 mr-2">
+                <span className="text-xs text-zinc-400 font-medium">Delay All:</span>
+                <select
+                  onChange={handleDelayAll}
+                  className="bg-zinc-800/50 border border-white/10 rounded-lg text-xs font-semibold text-white px-2 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer"
+                >
+                  <option value="">Select...</option>
+                  <option value="5">+5 Min</option>
+                  <option value="10">+10 Min</option>
+                  <option value="15">+15 Min</option>
+                  <option value="30">+30 Min</option>
+                </select>
+              </div>
+
+              {isConnected ? (
+                <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Sync Active
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+                  <WifiOff className="w-3.5 h-3.5" />
+                  Connecting…
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -164,13 +191,12 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
 }
 
 function KDSColumn({
-  status, label, color, onStatusChange, onDelay, diningFilter, warningMins, overdueMins
+  status, label, color, onStatusChange, diningFilter, warningMins, overdueMins
 }: {
   status: Order['status'];
   label: string;
   color: string;
   onStatusChange: (id: string, s: Order['status']) => void;
-  onDelay?: (orderId: string, minutes: number, currentOrderedAt: string) => void;
   diningFilter: 'all' | 'dine_in' | 'take_out';
   warningMins?: number;
   overdueMins?: number;
@@ -204,7 +230,6 @@ function KDSColumn({
               key={order.id}
               order={order}
               onStatusChange={onStatusChange}
-              onDelay={onDelay}
               warningMins={warningMins}
               overdueMins={overdueMins}
             />
