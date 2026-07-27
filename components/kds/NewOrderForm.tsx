@@ -214,7 +214,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
     <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:inset-auto md:w-[95vw] md:max-w-5xl md:h-[85vh] md:rounded-2xl bg-zinc-950 border border-white/10 z-[60] shadow-2xl focus:outline-none flex flex-col overflow-hidden">
+        <Dialog.Content className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:inset-auto md:w-[95vw] md:max-w-5xl md:h-[92vh] md:rounded-2xl bg-zinc-950 border border-white/10 z-[60] shadow-2xl focus:outline-none flex flex-col overflow-hidden">
 
           {/* ── Top Bar ─────────────────────────────────────────── */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
@@ -392,13 +392,15 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
               </div>
 
               {/* Checkout form */}
-              <div className="p-4 border-t border-white/10 space-y-3">
-                <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)}
-                  placeholder="Customer Name (Optional)"
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50 placeholder:text-zinc-600" />
-                <input type="text" value={notes} onChange={e => setNotes(e.target.value)}
-                  placeholder="Kitchen Notes (e.g. No onions)"
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50 placeholder:text-zinc-600" />
+              <div className="p-3 lg:p-4 border-t border-white/10 space-y-2.5 flex-shrink-0 bg-zinc-950 z-10">
+                <div className="flex gap-2">
+                  <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)}
+                    placeholder="Name (Opt)"
+                    className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500/50 placeholder:text-zinc-600" />
+                  <input type="text" value={notes} onChange={e => setNotes(e.target.value)}
+                    placeholder="Notes (Opt)"
+                    className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500/50 placeholder:text-zinc-600" />
+                </div>
                 <div className="flex p-1 bg-zinc-900 border border-white/10 rounded-xl gap-1">
                   {(['take_out', 'dine_in'] as const).map(opt => (
                     <button key={opt} type="button" onClick={() => setDiningOption(opt)}
