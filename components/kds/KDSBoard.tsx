@@ -78,21 +78,26 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
     if (!minutes || isNaN(minutes)) return;
     e.target.value = ""; // reset dropdown
     
-    const activeOrders = useOrdersStore.getState().orders.filter(
-      o => ['pending', 'confirmed', 'in_progress'].includes(o.status) && (o as any).tenant_id === tenantId
-    );
-    if (activeOrders.length === 0) return;
-
-    const updates = activeOrders.map(order => {
-      const newOrderedAt = new Date(new Date(order.ordered_at).getTime() + minutes * 60000).toISOString();
-      updateOrder({ id: order.id, ordered_at: newOrderedAt });
-      return supabase.from('orders_appointments').update({ ordered_at: newOrderedAt }).eq('id', order.id);
-    });
-
+    const newSettings = { ...(tenantSettings || {}), kds_active_delay_mins: minutes };
+    setTenantSettings(newSettings);
     try {
-      await Promise.all(updates);
-    } catch {}
+      await supabase.from('tenants').update({ settings: newSettings }).eq('id', tenantId);
+    } catch (err) {
+      console.error('Failed to apply delay', err);
+    }
   };
+
+  const clearDelay = async () => {
+    const newSettings = { ...(tenantSettings || {}), kds_active_delay_mins: 0 };
+    setTenantSettings(newSettings);
+    try {
+      await supabase.from('tenants').update({ settings: newSettings }).eq('id', tenantId);
+    } catch (err) {
+      console.error('Failed to clear delay', err);
+    }
+  };
+
+  const activeDelayMins = tenantSettings?.kds_active_delay_mins || 0;
 
   return (
     <>
@@ -130,20 +135,35 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
           </div>
           <div className="flex flex-col items-end gap-3">
             <div className="flex items-center gap-3">
-              {/* Delay Dropdown */}
-              <div className="flex items-center gap-2 mr-2">
-                <span className="text-xs text-zinc-400 font-medium">Delay All:</span>
-                <select
-                  onChange={handleDelayAll}
-                  className="bg-zinc-800/50 border border-white/10 rounded-lg text-xs font-semibold text-white px-2 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer"
-                >
-                  <option value="">Select...</option>
-                  <option value="5">+5 Min</option>
-                  <option value="10">+10 Min</option>
-                  <option value="15">+15 Min</option>
-                  <option value="30">+30 Min</option>
-                </select>
-              </div>
+              {/* Delay Dropdown / Badge */}
+              {activeDelayMins > 0 ? (
+                <div className="flex items-center gap-2 mr-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5">
+                  <span className="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                    Delayed by {activeDelayMins}m
+                  </span>
+                  <button
+                    onClick={clearDelay}
+                    className="ml-2 text-xs text-zinc-400 hover:text-white transition-colors border border-white/10 rounded px-2 py-0.5 bg-black/20"
+                  >
+                    Reset
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="text-xs text-zinc-400 font-medium">Delay All:</span>
+                  <select
+                    onChange={handleDelayAll}
+                    className="bg-zinc-800/50 border border-white/10 rounded-lg text-xs font-semibold text-white px-2 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer"
+                  >
+                    <option value="">Select...</option>
+                    <option value="5">+5 Min</option>
+                    <option value="10">+10 Min</option>
+                    <option value="15">+15 Min</option>
+                    <option value="30">+30 Min</option>
+                  </select>
+                </div>
+              )}
 
               {isConnected ? (
                 <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -170,8 +190,8 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               color={color}
               onStatusChange={handleStatusChange}
               diningFilter={diningFilter}
-              warningMins={tenantSettings?.kds_warning_mins}
-              overdueMins={tenantSettings?.kds_overdue_mins}
+              warningMins={(tenantSettings?.kds_warning_mins || 15) + activeDelayMins}
+              overdueMins={(tenantSettings?.kds_overdue_mins || 30) + activeDelayMins}
             />
           ))}
         </div>
