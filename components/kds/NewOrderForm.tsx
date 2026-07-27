@@ -41,6 +41,8 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
   const [activeCategory, setActiveCategory] = useState<string>('All');
   
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [customName, setCustomName] = useState('');
+  const [customPrice, setCustomPrice] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -105,6 +107,23 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
         return item;
       }).filter(item => item.qty > 0);
     });
+  };
+
+  const addCustomItem = () => {
+    if (!customName || !customPrice) return;
+    const priceCents = Math.round(parseFloat(customPrice) * 100);
+    if (isNaN(priceCents) || priceCents < 0) return;
+
+    setCart(prev => [...prev, {
+      serviceId: 'custom-' + Date.now(),
+      name: customName,
+      priceCents,
+      qty: 1,
+      prepTime: 5
+    }]);
+
+    setCustomName('');
+    setCustomPrice('');
   };
 
   const totalCents = cart.reduce((acc, item) => acc + (item.priceCents * item.qty), 0);
@@ -215,6 +234,36 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Custom Item Footer */}
+              <div className="p-4 border-t border-white/5 bg-black/20">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Custom Item Name"
+                    value={customName}
+                    onChange={e => setCustomName(e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Price"
+                    value={customPrice}
+                    onChange={e => setCustomPrice(e.target.value)}
+                    className="w-24 bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomItem}
+                    disabled={!customName || !customPrice}
+                    className="p-2.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
