@@ -31,23 +31,25 @@ function useCountdown(startTime: string) {
 }
 
 // Urgency level based on minutes elapsed
-function getUrgencyClass(minutes: number): string {
-  if (minutes < 10) return 'countdown-normal';
-  if (minutes < 20) return 'countdown-warning';
-  return 'countdown-urgent';
+function getUrgencyClass(minutes: number, warningMins: number, overdueMins: number): string {
+  if (minutes >= overdueMins) return 'countdown-urgent';
+  if (minutes >= warningMins) return 'countdown-warning';
+  return 'countdown-normal';
 }
 
 // ============================================================
 // KDS TICKET CARD
 // ============================================================
 interface KDSTicketProps {
-  order: Order;
+  order: Order & { dining_option?: 'dine_in' | 'take_out' | 'delivery' };
   onStatusChange: (orderId: string, newStatus: Order['status']) => void;
+  warningMins?: number;
+  overdueMins?: number;
 }
 
-export function KDSTicket({ order, onStatusChange }: KDSTicketProps) {
+export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins = 30 }: KDSTicketProps) {
   const elapsed = useCountdown(order.ordered_at);
-  const urgencyClass = getUrgencyClass(elapsed.minutes);
+  const urgencyClass = getUrgencyClass(elapsed.minutes, warningMins, overdueMins);
 
   const cartItems = order.cart_items as Array<{
     name: string;
@@ -84,10 +86,22 @@ export function KDSTicket({ order, onStatusChange }: KDSTicketProps) {
             #{order.id.slice(0, 8).toUpperCase()}
           </p>
         </div>
-        {/* Elapsed timer */}
-        <div className={`flex items-center gap-1 text-xs font-mono font-semibold ${urgencyClass}`}>
-          <Clock className="w-3 h-3" />
-          {elapsed.minutes}:{elapsed.seconds.toString().padStart(2, '0')}
+        <div className="flex flex-col items-end gap-1">
+          {/* Dining Badge */}
+          {order.dining_option === 'dine_in' ? (
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase tracking-wider">
+              Dine-In
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-500/20 text-zinc-300 border border-zinc-500/30 uppercase tracking-wider">
+              Take-Out
+            </span>
+          )}
+          {/* Elapsed timer */}
+          <div className={`flex items-center gap-1 text-xs font-mono font-semibold ${urgencyClass}`}>
+            <Clock className="w-3 h-3" />
+            {elapsed.minutes}:{elapsed.seconds.toString().padStart(2, '0')}
+          </div>
         </div>
       </div>
 

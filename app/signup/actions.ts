@@ -53,6 +53,7 @@ export async function signUpAction(formData: FormData) {
       settings: {
         is_salon: businessType === 'salon',
         is_foodtruck: businessType === 'foodtruck',
+        is_agency: businessType === 'agency',
       },
     });
 

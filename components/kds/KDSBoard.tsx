@@ -95,6 +95,14 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
   const { setOrders, updateOrder, setLoading } = useOrdersStore();
   const [isConnected, setIsConnected] = useState(false);
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const [tenantSettings, setTenantSettings] = useState<any>(null);
+  const [diningFilter, setDiningFilter] = useState<'all' | 'dine_in' | 'take_out'>('all');
+
+  useEffect(() => {
+    supabase.from('tenants').select('settings').eq('id', tenantId).single().then(({ data }) => {
+      if (data?.settings) setTenantSettings(data.settings);
+    });
+  }, [tenantId, supabase]);
 
   useEffect(() => {
     setLoading(true);
@@ -150,6 +158,22 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               <h1 className="font-display text-2xl font-bold">Kitchen Display System</h1>
               <p className="text-sm text-zinc-400 mt-0.5">Live order queue & prep timers</p>
             </div>
+            
+            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 ml-6">
+              <button
+                onClick={() => setDiningFilter('all')}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${diningFilter === 'all' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'}`}
+              >All</button>
+              <button
+                onClick={() => setDiningFilter('dine_in')}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${diningFilter === 'dine_in' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'}`}
+              >Dine-In</button>
+              <button
+                onClick={() => setDiningFilter('take_out')}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${diningFilter === 'take_out' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'}`}
+              >Take-Out</button>
+            </div>
+
             <button
               onClick={() => setIsNewOrderOpen(true)}
               className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] ml-4"
@@ -182,6 +206,9 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               label={label}
               color={color}
               onStatusChange={handleStatusChange}
+              diningFilter={diningFilter}
+              warningMins={tenantSettings?.kds_warning_mins}
+              overdueMins={tenantSettings?.kds_overdue_mins}
             />
           ))}
         </div>
@@ -200,14 +227,24 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
 }
 
 function KDSColumn({
-  status, label, color, onStatusChange,
+  status, label, color, onStatusChange, diningFilter, warningMins, overdueMins
 }: {
   status: Order['status'];
   label: string;
   color: string;
   onStatusChange: (id: string, s: Order['status']) => void;
+  diningFilter: 'all' | 'dine_in' | 'take_out';
+  warningMins?: number;
+  overdueMins?: number;
 }) {
-  const orders = useOrdersByStatus(status);
+  const rawOrders = useOrdersByStatus(status);
+  const orders = rawOrders.filter(o => {
+    if (diningFilter === 'all') return true;
+    // We treat 'delivery' as take out for the KDS, or handle it strictly.
+    const opt = (o as any).dining_option || 'take_out';
+    if (diningFilter === 'dine_in') return opt === 'dine_in';
+    return opt === 'take_out' || opt === 'delivery';
+  });
 
   return (
     <div className={`glass-card flex flex-col border ${color} overflow-hidden`}>
@@ -229,6 +266,8 @@ function KDSColumn({
               key={order.id}
               order={order}
               onStatusChange={onStatusChange}
+              warningMins={warningMins}
+              overdueMins={overdueMins}
             />
           ))
         )}

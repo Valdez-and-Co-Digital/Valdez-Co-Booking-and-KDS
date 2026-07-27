@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Zap, Users, LogOut, Menu, Bell, FileText, Calendar
+  LayoutDashboard, Zap, Users, LogOut, Menu, Bell, FileText, Calendar, Settings
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,22 +13,42 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const unifiedNavItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Command Center' },
-  { href: '/dashboard/calendar', icon: Calendar, label: 'Appointments & Calendar' },
-  { href: '/dashboard/services', icon: Zap, label: 'Service & Menu Manager' },
-  { href: '/dashboard/clients', icon: Users, label: 'Customer Log' },
-  { href: '/dashboard/invoices', icon: FileText, label: 'Invoices & Billing' },
-];
-
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const supabase = createBrowserClient();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [tenantType, setTenantType] = useState<'salon' | 'foodtruck' | 'agency' | null>(null);
   const [tenantName, setTenantName] = useState('');
+  const [tenantSettings, setTenantSettings] = useState<any>(null);
 
-  const navItems = unifiedNavItems;
+  let navItems = [{ href: '/dashboard', icon: LayoutDashboard, label: 'Command Center' }];
+  if (tenantType === 'salon') {
+    navItems = [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Salon Overview' },
+      { href: '/dashboard/calendar', icon: Calendar, label: 'Appointments & Calendar' },
+      { href: '/dashboard/services', icon: Zap, label: 'Service Menu' },
+      { href: '/dashboard/clients', icon: Users, label: 'Customer Log' },
+      { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+    ];
+  } else if (tenantType === 'foodtruck') {
+    navItems = [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Kitchen Display' },
+      { href: '/dashboard/history', icon: FileText, label: 'Order History' },
+      { href: '/dashboard/services', icon: Zap, label: 'Menu Manager' },
+      { href: '/dashboard/clients', icon: Users, label: 'Customer Log' },
+      { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+    ];
+    if (tenantSettings?.enable_reservations) {
+      navItems.splice(1, 0, { href: '/dashboard/calendar', icon: Calendar, label: 'Reservations' });
+    }
+  } else if (tenantType === 'agency') {
+    navItems = [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Agency Overview' },
+      { href: '/dashboard/clients', icon: Users, label: 'Clients' },
+      { href: '/dashboard/invoices', icon: FileText, label: 'Invoices & Billing' },
+      { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+    ];
+  }
 
   useEffect(() => {
     // Load tenant context
@@ -43,6 +63,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           const t = data?.tenants;
           if (t) {
             setTenantName(t.name);
+            setTenantSettings(t.settings);
             if (t.settings?.is_foodtruck) {
               setTenantType('foodtruck');
             } else if (t.settings?.is_salon) {

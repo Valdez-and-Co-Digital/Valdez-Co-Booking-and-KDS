@@ -18,6 +18,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
   
   const [customerName, setCustomerName] = useState('');
   const [notes, setNotes] = useState('');
+  const [diningOption, setDiningOption] = useState<'dine_in' | 'take_out'>('take_out');
   
   // Very simplified point-of-sale for manual entry
   const [items, setItems] = useState([{ name: 'Custom Item', price: '10.00', qty: 1 }]);
@@ -57,7 +58,8 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
         cart_items,
         total_cents: totalCents,
         status: 'confirmed', // Starts as confirmed/new order
-        notes: notes || null
+        notes: notes || null,
+        dining_option: diningOption
       });
 
     setIsLoading(false);
@@ -69,6 +71,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
       // Clean up form
       setCustomerName('');
       setNotes('');
+      setDiningOption('take_out');
       setItems([{ name: 'Custom Item', price: '10.00', qty: 1 }]);
       onSuccess();
       onClose();
@@ -106,6 +109,32 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-violet-500 outline-none"
                   placeholder="Walk-in Customer"
                 />
+              </div>
+
+              <div className="space-y-1 col-span-2">
+                <label className="text-sm font-medium text-zinc-300">Dining Option</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm text-zinc-300">
+                    <input 
+                      type="radio" 
+                      value="take_out"
+                      checked={diningOption === 'take_out'}
+                      onChange={() => setDiningOption('take_out')}
+                      className="text-violet-500 focus:ring-violet-500 bg-black/40 border-white/10"
+                    />
+                    Take-Out
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-zinc-300">
+                    <input 
+                      type="radio" 
+                      value="dine_in"
+                      checked={diningOption === 'dine_in'}
+                      onChange={() => setDiningOption('dine_in')}
+                      className="text-violet-500 focus:ring-violet-500 bg-black/40 border-white/10"
+                    />
+                    Dine-In
+                  </label>
+                </div>
               </div>
 
               <div className="col-span-2">
