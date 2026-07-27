@@ -150,7 +150,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
         slot_start: new Date().toISOString(), // Required by schema
         cart_items,
         total_cents: totalCents,
-        status: 'confirmed',
+        status: 'in_progress', // Auto-start POS orders
         notes: notes || null,
         dining_option: diningOption
       });

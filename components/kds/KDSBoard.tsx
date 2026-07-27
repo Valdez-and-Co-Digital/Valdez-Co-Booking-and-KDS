@@ -73,6 +73,17 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
     }
   };
 
+  const handleDelay = async (orderId: string, minutes: number, currentOrderedAt: string) => {
+    const newOrderedAt = new Date(new Date(currentOrderedAt).getTime() + minutes * 60000).toISOString();
+    updateOrder({ id: orderId, ordered_at: newOrderedAt });
+    try {
+      await supabase
+        .from('orders_appointments')
+        .update({ ordered_at: newOrderedAt })
+        .eq('id', orderId);
+    } catch {}
+  };
+
   return (
     <>
       <div className="h-full flex flex-col gap-4">
@@ -131,6 +142,7 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               label={label}
               color={color}
               onStatusChange={handleStatusChange}
+              onDelay={handleDelay}
               diningFilter={diningFilter}
               warningMins={tenantSettings?.kds_warning_mins}
               overdueMins={tenantSettings?.kds_overdue_mins}
@@ -152,12 +164,13 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
 }
 
 function KDSColumn({
-  status, label, color, onStatusChange, diningFilter, warningMins, overdueMins
+  status, label, color, onStatusChange, onDelay, diningFilter, warningMins, overdueMins
 }: {
   status: Order['status'];
   label: string;
   color: string;
   onStatusChange: (id: string, s: Order['status']) => void;
+  onDelay?: (orderId: string, minutes: number, currentOrderedAt: string) => void;
   diningFilter: 'all' | 'dine_in' | 'take_out';
   warningMins?: number;
   overdueMins?: number;
@@ -191,6 +204,7 @@ function KDSColumn({
               key={order.id}
               order={order}
               onStatusChange={onStatusChange}
+              onDelay={onDelay}
               warningMins={warningMins}
               overdueMins={overdueMins}
             />

@@ -43,13 +43,15 @@ function getUrgencyClass(minutes: number, warningMins: number, overdueMins: numb
 interface KDSTicketProps {
   order: Order & { dining_option?: 'dine_in' | 'take_out' | 'delivery' };
   onStatusChange: (orderId: string, newStatus: Order['status']) => void;
+  onDelay?: (orderId: string, minutes: number, currentOrderedAt: string) => void;
   warningMins?: number;
   overdueMins?: number;
 }
 
-export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins = 30 }: KDSTicketProps) {
-  const elapsed = useCountdown(order.ordered_at);
-  const urgencyClass = getUrgencyClass(elapsed.minutes, warningMins, overdueMins);
+export function KDSTicket({ order, onStatusChange, onDelay, warningMins = 15, overdueMins = 30 }: KDSTicketProps) {
+  const isReady = order.status === 'ready';
+  const elapsed = useCountdown(isReady ? order.updated_at || order.ordered_at : order.ordered_at);
+  const urgencyClass = isReady ? 'text-emerald-400' : getUrgencyClass(elapsed.minutes, warningMins, overdueMins);
 
   const cartItems = order.cart_items as Array<{
     name: string;
@@ -100,6 +102,7 @@ export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins
           {/* Elapsed timer */}
           <div className={`flex items-center gap-1 text-xs font-mono font-semibold ${urgencyClass}`}>
             <Clock className="w-3 h-3" />
+            {isReady && <span className="font-sans text-[10px] text-zinc-400 mr-1 uppercase">Waiting</span>}
             {elapsed.minutes}:{elapsed.seconds.toString().padStart(2, '0')}
           </div>
         </div>
@@ -143,11 +146,22 @@ export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins
       )}
 
       {/* Status badge + action button */}
-      <div className="flex items-center justify-between">
-        <span className={`status-badge status-${order.status}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          {order.status.replace('_', ' ')}
-        </span>
+      <div className="flex items-center justify-between mt-1">
+        <div className="flex items-center gap-2">
+          <span className={`status-badge status-${order.status}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+            {order.status.replace('_', ' ')}
+          </span>
+          {order.status === 'in_progress' && onDelay && (
+            <button
+              onClick={() => onDelay(order.id, 15, order.ordered_at)}
+              className="text-[10px] px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors shadow-sm"
+              title="Delay by 15 mins"
+            >
+              +15m
+            </button>
+          )}
+        </div>
 
         {nextStatus[order.status] && (
           <button
