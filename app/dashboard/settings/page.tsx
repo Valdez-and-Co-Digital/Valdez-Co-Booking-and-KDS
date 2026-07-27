@@ -16,6 +16,8 @@ export default function SettingsPage() {
   const [enableReservations, setEnableReservations] = useState(false);
   const [enableCatering, setEnableCatering] = useState(false);
   const [requireOrderConfirmation, setRequireOrderConfirmation] = useState(false);
+  const [taxRate, setTaxRate] = useState(0);
+  const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,6 +36,8 @@ export default function SettingsPage() {
             setEnableReservations(!!t.settings?.enable_reservations);
             setEnableCatering(!!t.settings?.enable_catering);
             setRequireOrderConfirmation(!!t.settings?.require_order_confirmation);
+            setTaxRate(t.settings?.tax_rate ?? 0);
+            setPromoCodes(t.settings?.promo_codes || []);
           }
           setLoading(false);
         });
@@ -52,6 +56,8 @@ export default function SettingsPage() {
       enable_reservations: enableReservations,
       enable_catering: enableCatering,
       require_order_confirmation: requireOrderConfirmation,
+      tax_rate: taxRate,
+      promo_codes: promoCodes,
     };
 
     const { error } = await supabase
@@ -176,6 +182,75 @@ export default function SettingsPage() {
                   <div className="text-xs text-zinc-500">New orders will go to a "Pending" tab on the KDS and must be accepted manually before starting.</div>
                 </div>
               </label>
+            </div>
+
+            {/* Billing & Checkout Features */}
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Settings className="w-5 h-5 text-emerald-400" />
+                Billing & Checkout
+              </h2>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300">Local Tax Rate (%)</label>
+                <div className="relative max-w-[200px]">
+                  <input
+                    type="number" step="0.01" min="0" value={taxRate}
+                    onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">%</span>
+                </div>
+                <p className="text-xs text-zinc-500">Applied automatically to all point-of-sale orders.</p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <label className="text-sm font-medium text-zinc-300">Promo Codes</label>
+                {promoCodes.map((promo, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="text" value={promo.code} placeholder="Code (e.g. SUMMER20)"
+                      onChange={e => {
+                        const newPromos = [...promoCodes];
+                        newPromos[idx].code = e.target.value.toUpperCase();
+                        setPromoCodes(newPromos);
+                      }}
+                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none uppercase"
+                    />
+                    <select
+                      value={promo.discountType}
+                      onChange={e => {
+                        const newPromos = [...promoCodes];
+                        newPromos[idx].discountType = e.target.value as any;
+                        setPromoCodes(newPromos);
+                      }}
+                      className="bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                    >
+                      <option value="percentage">% Off</option>
+                      <option value="fixed">$ Off</option>
+                    </select>
+                    <input
+                      type="number" value={promo.discountValue} step={promo.discountType === 'percentage' ? "1" : "0.01"} min="0"
+                      onChange={e => {
+                        const newPromos = [...promoCodes];
+                        newPromos[idx].discountValue = parseFloat(e.target.value) || 0;
+                        setPromoCodes(newPromos);
+                      }}
+                      className="w-20 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                    />
+                    <button type="button" onClick={() => setPromoCodes(promoCodes.filter((_, i) => i !== idx))} className="p-2 text-red-400 hover:bg-white/10 rounded-lg">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setPromoCodes([...promoCodes, { code: '', discountType: 'percentage', discountValue: 10 }])}
+                  className="text-sm text-violet-400 hover:text-violet-300 font-medium flex items-center gap-1"
+                >
+                  + Add Promo Code
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -52,6 +52,14 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
   const [customName, setCustomName] = useState('');
   const [customPrice, setCustomPrice] = useState('');
 
+  // Settings
+  const [taxRate, setTaxRate] = useState(0);
+  const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
+  
+  // Checkout state
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number} | null>(null);
+
   useEffect(() => {
     if (isOpen) {
       setIsFetchingMenu(true);
@@ -65,6 +73,20 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
           setServices(data || []);
           setIsFetchingMenu(false);
         });
+
+      // Fetch settings
+      supabase
+        .from('tenants')
+        .select('settings')
+        .eq('id', tenantId)
+        .single()
+        .then(({ data }) => {
+          if (data?.settings) {
+            setTaxRate(data.settings.tax_rate || 0);
+            setPromoCodes(data.settings.promo_codes || []);
+          }
+        });
+
     } else {
       setCart([]);
       setCustomerName('');
@@ -72,6 +94,8 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
       setDiningOption('take_out');
       setActiveCategory('All');
       setPosTab('menu');
+      setPromoInput('');
+      setAppliedPromo(null);
     }
   }, [isOpen, tenantId, supabase]);
 
@@ -106,8 +130,37 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
     setCustomPrice('');
   };
 
-  const totalCents = cart.reduce((acc, i) => acc + i.priceCents * i.qty, 0);
+  const subtotalCents = cart.reduce((acc, i) => acc + i.priceCents * i.qty, 0);
   const totalItems = cart.reduce((acc, i) => acc + i.qty, 0);
+
+  let discountCents = 0;
+  if (appliedPromo) {
+    if (appliedPromo.discountType === 'percentage') {
+      discountCents = Math.round(subtotalCents * (appliedPromo.discountValue / 100));
+    } else {
+      discountCents = Math.round(appliedPromo.discountValue * 100);
+    }
+    if (discountCents > subtotalCents) discountCents = subtotalCents;
+  }
+
+  const taxableAmount = Math.max(0, subtotalCents - discountCents);
+  const taxCents = Math.round(taxableAmount * (taxRate / 100));
+  const totalCents = taxableAmount + taxCents;
+
+  const applyPromoCode = () => {
+    if (!promoInput) return;
+    const promo = promoCodes.find(p => p.code === promoInput.toUpperCase());
+    if (promo) {
+      setAppliedPromo(promo);
+    } else {
+      alert('Invalid promo code');
+    }
+    setPromoInput('');
+  };
+
+  const removePromoCode = () => {
+    setAppliedPromo(null);
+  };
 
   const handleSubmit = async () => {
     if (cart.length === 0) return;
@@ -130,6 +183,10 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
       status: requireConfirmation ? 'confirmed' : 'in_progress',
       notes: notes || null,
       dining_option: diningOption,
+      // Store additional checkout details
+      discount_cents: discountCents,
+      tax_cents: taxCents,
+      promo_code: appliedPromo?.code || null,
     });
     setIsLoading(false);
     if (error) {
@@ -226,7 +283,10 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
                             {/* Name + price */}
                             <div className="absolute bottom-0 left-0 right-0 p-3">
                               <p className="font-semibold text-white text-sm leading-tight">{service.name}</p>
-                              <p className="text-zinc-300 text-xs mt-0.5">${(service.price_cents / 100).toFixed(2)}</p>
+                              <p className="text-zinc-300 text-xs mt-0.5">
+                                ${(service.price_cents / 100).toFixed(2)}
+                                {taxRate > 0 && <span className="text-[10px] text-zinc-500 ml-1">+ tax</span>}
+                              </p>
                             </div>
                           </button>
 
@@ -337,9 +397,45 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
                   ))}
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-400 text-sm">Total</span>
-                  <span className="text-2xl font-bold text-emerald-400">${(totalCents / 100).toFixed(2)}</span>
+                <div className="pt-2 border-t border-white/5 space-y-2">
+                  {!appliedPromo ? (
+                    <div className="flex gap-2">
+                      <input type="text" value={promoInput} onChange={e => setPromoInput(e.target.value)} placeholder="Promo code"
+                        className="flex-1 bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500/50 uppercase" />
+                      <button type="button" onClick={applyPromoCode} className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 rounded-lg text-xs font-semibold transition-colors">Apply</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-violet-500/10 border border-violet-500/20 rounded-lg px-3 py-2">
+                      <span className="text-xs text-violet-400 font-semibold flex items-center gap-1">
+                        ✓ {appliedPromo.code} applied
+                      </span>
+                      <button type="button" onClick={removePromoCode} className="text-[10px] text-zinc-400 hover:text-white uppercase font-bold tracking-wider">Remove</button>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-xs text-zinc-400">
+                    <span>Subtotal</span>
+                    <span>${(subtotalCents / 100).toFixed(2)}</span>
+                  </div>
+                  
+                  {discountCents > 0 && (
+                    <div className="flex justify-between items-center text-xs text-emerald-400 font-medium">
+                      <span>Discount</span>
+                      <span>-${(discountCents / 100).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {taxRate > 0 && (
+                    <div className="flex justify-between items-center text-xs text-zinc-400">
+                      <span>Tax ({taxRate}%)</span>
+                      <span>${(taxCents / 100).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-zinc-300 font-medium text-sm">Total</span>
+                    <span className="text-xl font-bold text-emerald-400">${(totalCents / 100).toFixed(2)}</span>
+                  </div>
                 </div>
 
                 <button
