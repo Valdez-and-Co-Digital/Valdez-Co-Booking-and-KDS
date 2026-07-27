@@ -201,38 +201,56 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
                     {filteredServices.map(service => {
                       const qty = getQty(service.id);
                       return (
-                        <button
+                        <div
                           key={service.id}
-                          type="button"
-                          onClick={() => addToCart(service)}
-                          className={`relative aspect-[4/3] rounded-2xl overflow-hidden text-left transition-all active:scale-95 border-2 ${
-                            qty > 0 ? 'border-violet-500' : 'border-transparent'
+                          className={`relative aspect-[4/3] rounded-2xl overflow-hidden text-left transition-all border-2 ${
+                            qty > 0 ? 'border-violet-500 shadow-[0_0_15px_rgba(124,58,237,0.3)]' : 'border-transparent hover:border-white/10'
                           }`}
                         >
-                          {/* Background */}
-                          {service.image_url ? (
-                            <img src={service.image_url} alt={service.name} className="absolute inset-0 w-full h-full object-cover" />
-                          ) : (
-                            <div className="absolute inset-0 bg-zinc-800 flex items-center justify-center">
-                              <span className="text-3xl font-bold text-zinc-600">{service.name.charAt(0)}</span>
-                            </div>
-                          )}
-                          {/* Gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <button
+                            type="button"
+                            onClick={() => addToCart(service)}
+                            className="absolute inset-0 w-full h-full active:scale-95 transition-transform"
+                          >
+                            {/* Background */}
+                            {service.image_url ? (
+                              <img src={service.image_url} alt={service.name} className="absolute inset-0 w-full h-full object-cover" />
+                            ) : (
+                              <div className="absolute inset-0 bg-zinc-800 flex items-center justify-center">
+                                <span className="text-3xl font-bold text-zinc-600">{service.name.charAt(0)}</span>
+                              </div>
+                            )}
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                          {/* Qty badge */}
+                            {/* Name + price */}
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="font-semibold text-white text-sm leading-tight">{service.name}</p>
+                              <p className="text-zinc-300 text-xs mt-0.5">${(service.price_cents / 100).toFixed(2)}</p>
+                            </div>
+                          </button>
+
+                          {/* Qty controls */}
                           {qty > 0 && (
-                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                              {qty}
+                            <div className="absolute top-2 right-2 flex items-center bg-violet-600 text-white rounded-lg p-0.5 shadow-lg z-10">
+                              <button
+                                type="button"
+                                onClick={() => updateCartQty(service.id, -1)}
+                                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-violet-700 active:bg-violet-800 transition-colors"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="w-6 text-center text-sm font-bold">{qty}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateCartQty(service.id, 1)}
+                                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-violet-700 active:bg-violet-800 transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
                             </div>
                           )}
-
-                          {/* Name + price */}
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="font-semibold text-white text-sm leading-tight">{service.name}</p>
-                            <p className="text-zinc-300 text-xs mt-0.5">${(service.price_cents / 100).toFixed(2)}</p>
-                          </div>
-                        </button>
+                        </div>
                       );
                     })}
 
