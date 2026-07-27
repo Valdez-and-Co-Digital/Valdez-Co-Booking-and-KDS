@@ -179,7 +179,7 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
               <span className="text-xs text-zinc-500 font-medium">
                 {isSalon ? `⏱️ ${service.duration_minutes} min` : `🍳 ${service.prep_time_minutes} min prep`}
               </span>
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2">
                 <button onClick={() => setEditingId(service.id)} className="p-1.5 text-zinc-400 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-colors">
                   <Edit2 className="w-4 h-4" />
                 </button>
