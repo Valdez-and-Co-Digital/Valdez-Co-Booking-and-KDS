@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Zap, Users, LogOut, Menu, Bell, FileText, Calendar, Settings
+  LayoutDashboard, Zap, Users, LogOut, Menu, Bell, FileText, Calendar, Settings, UtensilsCrossed
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -40,6 +40,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     ];
     if (tenantSettings?.enable_reservations) {
       navItems.splice(1, 0, { href: '/dashboard/calendar', icon: Calendar, label: 'Reservations' });
+    }
+    if (tenantSettings?.enable_catering) {
+      navItems.splice(2, 0, { href: '/dashboard/catering', icon: UtensilsCrossed, label: 'Catering' });
     }
   } else if (tenantType === 'agency') {
     navItems = [

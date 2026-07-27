@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [warningMins, setWarningMins] = useState(15);
   const [overdueMins, setOverdueMins] = useState(30);
   const [enableReservations, setEnableReservations] = useState(false);
+  const [enableCatering, setEnableCatering] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,6 +31,7 @@ export default function SettingsPage() {
             setWarningMins(t.settings?.kds_warning_mins ?? 15);
             setOverdueMins(t.settings?.kds_overdue_mins ?? 30);
             setEnableReservations(!!t.settings?.enable_reservations);
+            setEnableCatering(!!t.settings?.enable_catering);
           }
           setLoading(false);
         });
@@ -40,12 +42,13 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!tenant) return;
     setSaving(true);
-    
+
     const newSettings = {
       ...tenant.settings,
       kds_warning_mins: warningMins,
       kds_overdue_mins: overdueMins,
       enable_reservations: enableReservations,
+      enable_catering: enableCatering,
     };
 
     const { error } = await supabase
@@ -57,7 +60,6 @@ export default function SettingsPage() {
     if (error) {
       alert('Failed to save settings: ' + error.message);
     } else {
-      // Force reload to update layout
       window.location.reload();
     }
   };
@@ -85,15 +87,12 @@ export default function SettingsPage() {
               <Clock className="w-5 h-5 text-emerald-400" />
               Kitchen Display (KDS) Settings
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-300">Warning Time (minutes)</label>
                 <input
-                  type="number"
-                  min="1"
-                  required
-                  value={warningMins}
+                  type="number" min="1" required value={warningMins}
                   onChange={(e) => setWarningMins(parseInt(e.target.value))}
                   className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
                 />
@@ -103,10 +102,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-300">Overdue Time (minutes)</label>
                 <input
-                  type="number"
-                  min="1"
-                  required
-                  value={overdueMins}
+                  type="number" min="1" required value={overdueMins}
                   onChange={(e) => setOverdueMins(parseInt(e.target.value))}
                   className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
                 />
@@ -114,21 +110,48 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/10">
-              <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+            {/* Restaurant Features */}
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
                 <CheckSquare className="w-5 h-5 text-emerald-400" />
                 Restaurant Features
               </h2>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enableReservations}
-                  onChange={(e) => setEnableReservations(e.target.checked)}
-                  className="w-5 h-5 rounded border-white/10 bg-black/40 text-violet-500 focus:ring-violet-500 focus:ring-offset-black"
-                />
+
+              {/* Reservations Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={enableReservations}
+                    onChange={(e) => setEnableReservations(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-11 h-6 rounded-full transition-colors ${enableReservations ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${enableReservations ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </div>
                 <div>
-                  <div className="font-medium">Enable Reservations Calendar</div>
+                  <div className="font-medium text-sm">Enable Reservations Calendar</div>
                   <div className="text-xs text-zinc-500">Show the reservations tab in your sidebar.</div>
+                </div>
+              </label>
+
+              {/* Catering Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={enableCatering}
+                    onChange={(e) => setEnableCatering(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-11 h-6 rounded-full transition-colors ${enableCatering ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${enableCatering ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium text-sm">Enable Catering Bookings</div>
+                  <div className="text-xs text-zinc-500">Show the catering booking page in your sidebar. Clients can book corporate events, private parties, and more.</div>
                 </div>
               </label>
             </div>
