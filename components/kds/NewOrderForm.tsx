@@ -146,6 +146,8 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
       .insert({
         tenant_id: tenantId,
         customer_name: customerName || 'Walk-in Customer',
+        customer_email: 'walkin@local', // Required by schema
+        slot_start: new Date().toISOString(), // Required by schema
         cart_items,
         total_cents: totalCents,
         status: 'confirmed',
@@ -157,7 +159,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
 
     if (error) {
       console.error('Failed to create order:', error);
-      alert('Failed to create order');
+      alert(`Failed to create order: ${error.message || JSON.stringify(error)}`);
     } else {
       onSuccess();
       onClose();
