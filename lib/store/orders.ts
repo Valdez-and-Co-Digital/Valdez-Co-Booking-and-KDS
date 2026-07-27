@@ -38,20 +38,17 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
 
 /** Orders filtered by status for KDS Kanban columns */
 export const useOrdersByStatus = (status: Order['status']) =>
-  useOrdersStore(s => s.orders.filter(o => o.status === status));
+  useOrdersStore(s => s.orders).filter(o => o.status === status);
 
 /** Active orders (all non-terminal states) sorted by time */
 export const useActiveOrders = () =>
-  useOrdersStore(s =>
-    s.orders
-      .filter(o => !['completed', 'cancelled', 'no_show'].includes(o.status))
-      .sort((a, b) => new Date(a.slot_start).getTime() - new Date(b.slot_start).getTime())
-  );
+  useOrdersStore(s => s.orders)
+    .filter(o => !['completed', 'cancelled', 'no_show'].includes(o.status))
+    .sort((a, b) => new Date(a.slot_start).getTime() - new Date(b.slot_start).getTime());
 
 /** Today's orders only */
-export const useTodaysOrders = () =>
-  useOrdersStore(s => {
-    const today = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
-    return s.orders.filter(o => o.slot_start.startsWith(todayStr));
-  });
+export const useTodaysOrders = () => {
+  const orders = useOrdersStore(s => s.orders);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  return orders.filter(o => o.slot_start.startsWith(todayStr));
+};
