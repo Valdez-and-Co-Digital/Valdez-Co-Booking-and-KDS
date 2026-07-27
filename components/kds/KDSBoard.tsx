@@ -174,7 +174,7 @@ export function KDSBoard({ tenantId, requireConfirmation = false }: KDSBoardProp
         </div>
 
         {/* Order cards — scrollable area */}
-        <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-3">
+        <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-32">
           {activeOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-zinc-600">
               <Zap className="w-8 h-8 mb-3 opacity-20 text-violet-400" />
@@ -195,8 +195,8 @@ export function KDSBoard({ tenantId, requireConfirmation = false }: KDSBoardProp
           )}
         </div>
 
-        {/* Bottom action bar — fixed to bottom of this container */}
-        <div className="flex-shrink-0 flex gap-3 px-4 py-3 border-t border-white/5 bg-zinc-950">
+        {/* Bottom action bar — fixed above bottom nav */}
+        <div className="fixed bottom-[68px] left-0 right-0 z-40 flex gap-3 px-4 py-3 border-t border-white/10 bg-zinc-950/95 backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
           <Link
             href="/dashboard/history"
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-zinc-800 border border-white/10 text-sm font-semibold text-zinc-300 hover:bg-zinc-700 transition-colors"
