@@ -54,6 +54,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
 
   // Settings
   const [taxRate, setTaxRate] = useState(0);
+  const [taxInclusive, setTaxInclusive] = useState(false);
   const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
   
   // Checkout state
@@ -83,6 +84,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
         .then(({ data }) => {
           if (data?.settings) {
             setTaxRate(data.settings.tax_rate || 0);
+            setTaxInclusive(!!data.settings.tax_inclusive);
             setPromoCodes(data.settings.promo_codes || []);
           }
         });
@@ -144,8 +146,17 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
   }
 
   const taxableAmount = Math.max(0, subtotalCents - discountCents);
-  const taxCents = Math.round(taxableAmount * (taxRate / 100));
-  const totalCents = taxableAmount + taxCents;
+  let taxCents = 0;
+  let totalCents = 0;
+
+  if (taxInclusive) {
+    totalCents = taxableAmount;
+    // Calculate backwards: tax = total - (total / (1 + rate))
+    taxCents = Math.round(totalCents - (totalCents / (1 + taxRate / 100)));
+  } else {
+    taxCents = Math.round(taxableAmount * (taxRate / 100));
+    totalCents = taxableAmount + taxCents;
+  }
 
   const applyPromoCode = () => {
     if (!promoInput) return;
@@ -285,7 +296,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
                               <p className="font-semibold text-white text-sm leading-tight">{service.name}</p>
                               <p className="text-zinc-300 text-xs mt-0.5">
                                 ${(service.price_cents / 100).toFixed(2)}
-                                {taxRate > 0 && <span className="text-[10px] text-zinc-500 ml-1">+ tax</span>}
+                                {taxRate > 0 && !taxInclusive && <span className="text-[10px] text-zinc-500 ml-1">+ tax</span>}
                               </p>
                             </div>
                           </button>
@@ -427,7 +438,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConf
 
                   {taxRate > 0 && (
                     <div className="flex justify-between items-center text-xs text-zinc-400">
-                      <span>Tax ({taxRate}%)</span>
+                      <span>{taxInclusive ? `Includes Tax (${taxRate}%)` : `Tax (${taxRate}%)`}</span>
                       <span>${(taxCents / 100).toFixed(2)}</span>
                     </div>
                   )}

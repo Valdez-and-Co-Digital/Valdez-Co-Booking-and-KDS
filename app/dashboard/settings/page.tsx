@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [enableCatering, setEnableCatering] = useState(false);
   const [requireOrderConfirmation, setRequireOrderConfirmation] = useState(false);
   const [taxRate, setTaxRate] = useState(0);
+  const [taxInclusive, setTaxInclusive] = useState(false);
   const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function SettingsPage() {
             setEnableCatering(!!t.settings?.enable_catering);
             setRequireOrderConfirmation(!!t.settings?.require_order_confirmation);
             setTaxRate(t.settings?.tax_rate ?? 0);
+            setTaxInclusive(!!t.settings?.tax_inclusive);
             setPromoCodes(t.settings?.promo_codes || []);
           }
           setLoading(false);
@@ -57,6 +59,7 @@ export default function SettingsPage() {
       enable_catering: enableCatering,
       require_order_confirmation: requireOrderConfirmation,
       tax_rate: taxRate,
+      tax_inclusive: taxInclusive,
       promo_codes: promoCodes,
     };
 
@@ -204,7 +207,26 @@ export default function SettingsPage() {
                 <p className="text-xs text-zinc-500">Applied automatically to all point-of-sale orders.</p>
               </div>
 
-              <div className="space-y-3 pt-2">
+              {/* Tax Inclusive Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer group pt-1 pb-2">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={taxInclusive}
+                    onChange={(e) => setTaxInclusive(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-11 h-6 rounded-full transition-colors ${taxInclusive ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${taxInclusive ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium text-sm">Prices Include Tax</div>
+                  <div className="text-xs text-zinc-500">If enabled, menu prices already include tax, and tax is calculated backwards from the total.</div>
+                </div>
+              </label>
+
+              <div className="space-y-3 pt-2 border-t border-white/5">
                 <label className="text-sm font-medium text-zinc-300">Promo Codes</label>
                 {promoCodes.map((promo, idx) => (
                   <div key={idx} className="flex items-center gap-2">
