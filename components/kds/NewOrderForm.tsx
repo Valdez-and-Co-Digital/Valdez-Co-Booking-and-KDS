@@ -13,6 +13,7 @@ interface NewOrderFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  requireConfirmation?: boolean;
 }
 
 interface Service {
@@ -34,7 +35,7 @@ interface CartItem {
 
 type POSTab = 'menu' | 'cart' | 'history' | 'more';
 
-export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderFormProps) {
+export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess, requireConfirmation = false }: NewOrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createBrowserClient();
 
@@ -125,7 +126,8 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
       slot_start: new Date().toISOString(),
       cart_items,
       total_cents: totalCents,
-      status: 'in_progress',
+      // If confirmation required, start as 'confirmed'; otherwise auto-start as 'in_progress'
+      status: requireConfirmation ? 'confirmed' : 'in_progress',
       notes: notes || null,
       dining_option: diningOption,
     });
@@ -144,7 +146,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
     <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[95vw] md:max-w-5xl md:h-[85vh] md:rounded-2xl bg-zinc-950 border border-white/10 z-50 shadow-2xl focus:outline-none flex flex-col overflow-hidden">
+        <Dialog.Content className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:inset-auto md:w-[95vw] md:max-w-5xl md:h-[85vh] md:rounded-2xl bg-zinc-950 border border-white/10 z-[60] shadow-2xl focus:outline-none flex flex-col overflow-hidden">
 
           {/* ── Top Bar ─────────────────────────────────────────── */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
@@ -264,7 +266,14 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
 
             {/* ── Cart pane ──────────────────────────────────────── */}
             <div className={`md:w-[340px] lg:w-[380px] md:border-l border-white/10 flex flex-col ${posTab !== 'cart' ? 'hidden md:flex' : 'flex flex-1'}`}>
-              <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
+              <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3">
+                {/* Back to menu — mobile only */}
+                <button
+                  onClick={() => setPosTab('menu')}
+                  className="md:hidden p-1.5 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                </button>
                 <ShoppingCart className="w-4 h-4 text-zinc-400" />
                 <h3 className="font-semibold">Current Order</h3>
               </div>
@@ -347,7 +356,7 @@ export function NewOrderForm({ tenantId, isOpen, onClose, onSuccess }: NewOrderF
           </div>
 
           {/* ── Mobile Bottom Tab Bar ───────────────────────────── */}
-          <div className="md:hidden flex border-t border-white/10 bg-zinc-950">
+          <div className="md:hidden flex-shrink-0 flex border-t border-white/10 bg-zinc-950">
             {([
               { id: 'menu',    icon: BookOpen,      label: 'Menu' },
               { id: 'cart',    icon: ShoppingCart,  label: 'Cart' },

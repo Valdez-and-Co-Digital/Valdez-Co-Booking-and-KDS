@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const [overdueMins, setOverdueMins] = useState(30);
   const [enableReservations, setEnableReservations] = useState(false);
   const [enableCatering, setEnableCatering] = useState(false);
+  const [requireOrderConfirmation, setRequireOrderConfirmation] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,6 +33,7 @@ export default function SettingsPage() {
             setOverdueMins(t.settings?.kds_overdue_mins ?? 30);
             setEnableReservations(!!t.settings?.enable_reservations);
             setEnableCatering(!!t.settings?.enable_catering);
+            setRequireOrderConfirmation(!!t.settings?.require_order_confirmation);
           }
           setLoading(false);
         });
@@ -49,6 +51,7 @@ export default function SettingsPage() {
       kds_overdue_mins: overdueMins,
       enable_reservations: enableReservations,
       enable_catering: enableCatering,
+      require_order_confirmation: requireOrderConfirmation,
     };
 
     const { error } = await supabase
@@ -152,6 +155,25 @@ export default function SettingsPage() {
                 <div>
                   <div className="font-medium text-sm">Enable Catering Bookings</div>
                   <div className="text-xs text-zinc-500">Show the catering booking page in your sidebar. Clients can book corporate events, private parties, and more.</div>
+                </div>
+              </label>
+
+              {/* Require Order Confirmation Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={requireOrderConfirmation}
+                    onChange={(e) => setRequireOrderConfirmation(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-11 h-6 rounded-full transition-colors ${requireOrderConfirmation ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${requireOrderConfirmation ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium text-sm">Require Order Confirmation</div>
+                  <div className="text-xs text-zinc-500">New orders will go to a "Pending" tab on the KDS and must be accepted manually before starting.</div>
                 </div>
               </label>
             </div>

@@ -12,18 +12,21 @@ import type { Order } from '@/types/database';
 
 interface KDSBoardProps {
   tenantId: string;
+  requireConfirmation?: boolean;
 }
 
 type TabStatus = 'confirmed' | 'in_progress' | 'ready';
 
-export function KDSBoard({ tenantId }: KDSBoardProps) {
+export function KDSBoard({ tenantId, requireConfirmation = false }: KDSBoardProps) {
   const supabase = createBrowserClient();
   const { setOrders, updateOrder, setLoading } = useOrdersStore();
   const [isConnected, setIsConnected] = useState(false);
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const [tenantSettings, setTenantSettings] = useState<any>(null);
   const [diningFilter, setDiningFilter] = useState<'all' | 'dine_in' | 'take_out'>('all');
-  const [activeTab, setActiveTab] = useState<TabStatus>('confirmed');
+  const [activeTab, setActiveTab] = useState<TabStatus>(
+    requireConfirmation ? 'confirmed' : 'in_progress'
+  );
 
   useEffect(() => {
     supabase.from('tenants').select('settings').eq('id', tenantId).single().then(({ data }) => {
@@ -78,20 +81,23 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
   const warningMins = (tenantSettings?.kds_warning_mins || 15) + activeDelayMins;
   const overdueMins = (tenantSettings?.kds_overdue_mins || 30) + activeDelayMins;
 
-  const newOrders = useOrdersByStatusFiltered('confirmed', diningFilter);
+  const confirmedOrders = useOrdersByStatusFiltered('confirmed', diningFilter);
   const inProgressOrders = useOrdersByStatusFiltered('in_progress', diningFilter);
   const readyOrders = useOrdersByStatusFiltered('ready', diningFilter);
 
-  const totalActive = newOrders.length + inProgressOrders.length + readyOrders.length;
+  const totalActive = confirmedOrders.length + inProgressOrders.length + readyOrders.length;
 
+  // Tabs — only show "Pending" tab if require_order_confirmation is enabled
   const tabs: { status: TabStatus; label: string; count: number }[] = [
-    { status: 'confirmed',   label: 'New',    count: newOrders.length },
-    { status: 'in_progress', label: 'Active', count: inProgressOrders.length },
-    { status: 'ready',       label: 'Ready',  count: readyOrders.length },
+    ...(requireConfirmation
+      ? [{ status: 'confirmed' as TabStatus, label: 'Pending', count: confirmedOrders.length }]
+      : []),
+    { status: 'in_progress', label: 'Active',  count: inProgressOrders.length },
+    { status: 'ready',       label: 'Ready',   count: readyOrders.length },
   ];
 
   const activeOrders =
-    activeTab === 'confirmed'   ? newOrders :
+    activeTab === 'confirmed'   ? confirmedOrders :
     activeTab === 'in_progress' ? inProgressOrders :
     readyOrders;
 
@@ -103,9 +109,10 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
         <div className="px-4 pt-4 pb-3 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold font-display">Active Orders</h1>
-            <p className="text-sm text-zinc-400 mt-0.5">{totalActive} ticket{totalActive !== 1 ? 's' : ''} currently in queue</p>
+            <p className="text-sm text-zinc-400 mt-0.5">
+              {totalActive} ticket{totalActive !== 1 ? 's' : ''} in queue
+            </p>
           </div>
-          {/* Live avg badge */}
           <div className="flex flex-col items-end gap-2">
             {isConnected ? (
               <div className="bg-zinc-800 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
@@ -117,7 +124,6 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
                 <WifiOff className="w-3.5 h-3.5" /> Connecting…
               </div>
             )}
-            {/* Delay */}
             {activeDelayMins > 0 ? (
               <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -138,7 +144,6 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
 
         {/* Dining filter + Status tabs */}
         <div className="px-4 pb-3 space-y-2">
-          {/* Dining filter */}
           <div className="flex bg-zinc-900 p-1 rounded-xl border border-white/5 w-fit gap-0.5">
             {(['all', 'dine_in', 'take_out'] as const).map(f => (
               <button
@@ -151,7 +156,6 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
             ))}
           </div>
 
-          {/* Status tabs */}
           <div className="flex gap-2">
             {tabs.map(tab => (
               <button
@@ -169,8 +173,8 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
           </div>
         </div>
 
-        {/* Order cards */}
-        <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-4">
+        {/* Order cards — scrollable area */}
+        <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-3">
           {activeOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-zinc-600">
               <Zap className="w-8 h-8 mb-3 opacity-20 text-violet-400" />
@@ -185,13 +189,14 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
                 warningMins={warningMins}
                 overdueMins={overdueMins}
                 isMobile
+                requireConfirmation={requireConfirmation}
               />
             ))
           )}
         </div>
 
-        {/* Bottom action bar */}
-        <div className="flex gap-3 px-4 py-3 bg-zinc-950/80 border-t border-white/5">
+        {/* Bottom action bar — fixed to bottom of this container */}
+        <div className="flex-shrink-0 flex gap-3 px-4 py-3 border-t border-white/5 bg-zinc-950">
           <Link
             href="/dashboard/history"
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-zinc-800 border border-white/10 text-sm font-semibold text-zinc-300 hover:bg-zinc-700 transition-colors"
@@ -209,9 +214,8 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
         </div>
       </div>
 
-      {/* ── Desktop Layout (unchanged 3-column grid) ──────────── */}
+      {/* ── Desktop Layout ────────────────────────────────────── */}
       <div className="hidden md:flex flex-col h-full gap-4">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div>
@@ -238,7 +242,7 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
               <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span className="text-xs text-amber-400 font-semibold">+{activeDelayMins}m delay</span>
-                <button onClick={clearDelay} className="text-xs text-zinc-400 hover:text-white border border-white/10 rounded px-1.5 py-0.5 bg-black/20">✕</button>
+                <button onClick={clearDelay} className="text-xs text-zinc-400 border border-white/10 rounded px-1.5 py-0.5 bg-black/20">✕</button>
               </div>
             ) : (
               <select onChange={handleDelayAll} className="bg-zinc-800/50 border border-white/10 rounded-lg text-xs font-semibold text-zinc-300 px-2 py-1.5 focus:outline-none cursor-pointer">
@@ -254,15 +258,17 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />Live Sync
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs text-zinc-500"><WifiOff className="w-3.5 h-3.5" /> Connecting…</span>
+              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <WifiOff className="w-3.5 h-3.5" /> Connecting…
+              </span>
             )}
           </div>
         </div>
 
-        {/* 3-column kanban */}
+        {/* Desktop 3-column grid (always shows all statuses) */}
         <div className="flex-1 grid grid-cols-3 gap-4 overflow-hidden">
           {([
-            { status: 'confirmed' as const,   label: 'New Orders',  color: 'border-blue-500/30',    orders: newOrders },
+            { status: 'confirmed' as const,   label: requireConfirmation ? 'Pending Confirmation' : 'New Orders', color: 'border-blue-500/30',    orders: confirmedOrders },
             { status: 'in_progress' as const, label: 'In Progress', color: 'border-violet-500/30',  orders: inProgressOrders },
             { status: 'ready' as const,       label: 'Ready',       color: 'border-emerald-500/30', orders: readyOrders },
           ]).map(({ status, label, color, orders }) => (
@@ -279,7 +285,7 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
                   </div>
                 ) : (
                   orders.map(order => (
-                    <KDSTicket key={order.id} order={order} onStatusChange={handleStatusChange} warningMins={warningMins} overdueMins={overdueMins} />
+                    <KDSTicket key={order.id} order={order} onStatusChange={handleStatusChange} warningMins={warningMins} overdueMins={overdueMins} requireConfirmation={requireConfirmation} />
                   ))
                 )}
               </div>
@@ -288,12 +294,11 @@ export function KDSBoard({ tenantId }: KDSBoardProps) {
         </div>
       </div>
 
-      <NewOrderForm tenantId={tenantId} isOpen={isNewOrderOpen} onClose={() => setIsNewOrderOpen(false)} onSuccess={() => {}} />
+      <NewOrderForm tenantId={tenantId} isOpen={isNewOrderOpen} onClose={() => setIsNewOrderOpen(false)} onSuccess={() => {}} requireConfirmation={requireConfirmation} />
     </>
   );
 }
 
-// Hook helper for filtered orders
 function useOrdersByStatusFiltered(status: Order['status'], diningFilter: 'all' | 'dine_in' | 'take_out') {
   const rawOrders = useOrdersByStatus(status);
   return rawOrders.filter(o => {

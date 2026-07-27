@@ -49,9 +49,10 @@ interface KDSTicketProps {
   warningMins?: number;
   overdueMins?: number;
   isMobile?: boolean;
+  requireConfirmation?: boolean;
 }
 
-export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins = 30, isMobile = false }: KDSTicketProps) {
+export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins = 30, isMobile = false, requireConfirmation = false }: KDSTicketProps) {
   const isReady = order.status === 'ready';
   const elapsed = useCountdown(isReady ? (order as any).updated_at || order.ordered_at : order.ordered_at);
 
@@ -79,11 +80,20 @@ export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins
 
   // ── Mobile card ─────────────────────────────────────────────────
   if (isMobile) {
-    const isCompleteAction = order.status === 'in_progress' || order.status === 'confirmed';
+    // When confirmation mode is on: confirmed = needs manual accept
+    // When off: confirmed orders are auto-started, show as active
+    const isPending = requireConfirmation && order.status === 'confirmed';
+    const isCompleteAction = order.status === 'in_progress';
     const btnLabel =
+      isPending                      ? 'ACCEPT ORDER' :
       order.status === 'confirmed'   ? 'COMPLETE' :
       order.status === 'in_progress' ? 'COMPLETE' :
       order.status === 'ready'       ? 'DONE ✓' : '';
+    const btnColor = isPending
+      ? 'bg-blue-600 hover:bg-blue-500 text-white'
+      : isCompleteAction
+        ? 'bg-violet-600 hover:bg-violet-500 text-white'
+        : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-200';
 
     return (
       <div className="bg-zinc-900 border border-white/8 rounded-2xl overflow-hidden">
@@ -138,11 +148,7 @@ export function KDSTicket({ order, onStatusChange, warningMins = 15, overdueMins
         {next && (
           <button
             onClick={() => onStatusChange(order.id, next)}
-            className={`w-full py-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center justify-center gap-2 ${
-              isCompleteAction
-                ? 'bg-violet-600 hover:bg-violet-500 text-white'
-                : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-200'
-            }`}
+            className={`w-full py-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center justify-center gap-2 ${btnColor}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
