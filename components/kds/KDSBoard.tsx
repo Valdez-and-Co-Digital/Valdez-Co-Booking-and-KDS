@@ -255,7 +255,7 @@ export function KDSBoard({ tenantId, requireConfirmation = false }: KDSBoardProp
             )}
             {isConnected ? (
               <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />Live Sync
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />LIVE: {warningMins}m avg.
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-xs text-zinc-500">
