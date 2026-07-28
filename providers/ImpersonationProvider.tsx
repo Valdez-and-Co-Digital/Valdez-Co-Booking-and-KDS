@@ -47,8 +47,10 @@ export function ImpersonationProvider({ children }: { children: React.ReactNode 
     setImpersonatedTenantIdState(id);
     if (id) {
       localStorage.setItem('swiftkds_impersonated_tenant', id);
+      document.cookie = `swiftkds_impersonated_tenant=${id}; path=/; max-age=86400`;
     } else {
       localStorage.removeItem('swiftkds_impersonated_tenant');
+      document.cookie = `swiftkds_impersonated_tenant=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     }
   };
 

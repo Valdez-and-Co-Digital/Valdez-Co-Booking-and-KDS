@@ -211,7 +211,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <button
                 onClick={() => {
                   setImpersonatedTenantId(null);
-                  window.location.href = '/admin/valdez';
+                  window.location.href = '/dashboard';
                 }}
                 className="text-xs bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition-colors"
               >

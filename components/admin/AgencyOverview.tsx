@@ -42,7 +42,7 @@ export default function AgencyOverview() {
 
   const handleImpersonate = (tenantId: string) => {
     setImpersonatedTenantId(tenantId);
-    router.push('/dashboard');
+    router.refresh();
   };
 
   if (loading) {

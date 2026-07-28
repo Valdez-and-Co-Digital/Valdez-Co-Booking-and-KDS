@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { KDSBoard } from '@/components/kds/KDSBoard';
@@ -13,14 +14,31 @@ export default async function DashboardOverviewPage() {
     redirect('/login');
   }
 
-  // Fetch user's tenant connection using admin client to bypass RLS delay
-  const { data: adminUser } = await adminSupabase
-    .from('admin_users')
-    .select('tenant:tenants(id, name, settings, business_hours)')
-    .eq('user_id', session.user.id)
-    .single();
+  // Check if we are impersonating
+  const impersonatedTenantId = cookies().get('swiftkds_impersonated_tenant')?.value;
 
-  const tenant = adminUser?.tenant as any;
+  let tenant: any = null;
+
+  if (impersonatedTenantId) {
+    // If impersonating, load that tenant specifically
+    const { data: impersonatedTenant } = await adminSupabase
+      .from('tenants')
+      .select('id, name, settings, business_hours')
+      .eq('id', impersonatedTenantId)
+      .single();
+    
+    tenant = impersonatedTenant;
+  } else {
+    // Fetch user's normal tenant connection
+    const { data: adminUser } = await adminSupabase
+      .from('admin_users')
+      .select('tenant:tenants(id, name, settings, business_hours)')
+      .eq('user_id', session.user.id)
+      .single();
+
+    tenant = adminUser?.tenant;
+  }
+
   if (!tenant) {
     return <div className="p-8 text-center text-zinc-400">Loading your business profile...</div>;
   }
