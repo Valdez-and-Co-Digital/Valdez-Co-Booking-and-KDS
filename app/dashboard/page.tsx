@@ -2,21 +2,7 @@ import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { KDSBoard } from '@/components/kds/KDSBoard';
 import { CalendarView } from '@/components/calendar/CalendarView';
-import { LayoutDashboard } from 'lucide-react';
-
-function AgencyOverview() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center text-zinc-400 p-8 space-y-4">
-      <LayoutDashboard className="w-12 h-12 text-violet-400/50" />
-      <div>
-        <h2 className="text-xl font-display font-semibold text-zinc-200">Agency Dashboard</h2>
-        <p className="mt-2 text-sm max-w-sm mx-auto">
-          Welcome to your web design agency overview. Use the sidebar to manage your clients and track high-ticket invoices.
-        </p>
-      </div>
-    </div>
-  );
-}
+import AgencyOverview from '@/components/admin/AgencyOverview';
 
 export default async function DashboardOverviewPage() {
   const supabase = await createServerClient();
@@ -39,11 +25,15 @@ export default async function DashboardOverviewPage() {
     return <div className="p-8 text-center text-zinc-400">Loading your business profile...</div>;
   }
 
+  // If the user doesn't belong to a specific restaurant/salon, they are the agency admin.
+  // The AgencyOverview is the new God Mode.
+  const isAgency = !tenant.settings?.is_foodtruck && !tenant.settings?.is_restaurant && !tenant.settings?.is_salon;
+
   return (
-    <div className="h-[calc(100vh-5rem)]">
-      {tenant.settings?.is_foodtruck ? (
+    <div className={isAgency ? "" : "h-[calc(100vh-5rem)]"}>
+      {tenant.settings?.is_foodtruck || tenant.settings?.is_restaurant ? (
         <KDSBoard tenantId={tenant.id} />
-      ) : tenant.settings?.is_agency ? (
+      ) : isAgency ? (
         <AgencyOverview />
       ) : (
         <CalendarView tenantId={tenant.id} businessHours={tenant.business_hours} />

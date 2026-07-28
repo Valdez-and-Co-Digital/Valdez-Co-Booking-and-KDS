@@ -79,9 +79,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       { href: '/dashboard/team',      icon: Users,           label: 'Team Management',     shortLabel: 'Team' },
       { href: '/dashboard/settings',  icon: Settings,        label: 'Settings',            shortLabel: 'Settings' },
     ];
-    if (userRole === 'owner') {
-      navItems.push({ href: '/admin/valdez', icon: ShieldAlert, label: 'God Mode', shortLabel: 'God Mode' });
-    }
   }
 
   // ── Bottom nav: take up to 4 primary items + always show Profile ──
