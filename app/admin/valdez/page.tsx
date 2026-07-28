@@ -133,21 +133,21 @@ export default function GodModePage() {
             <h2 className="text-lg font-display font-semibold text-white">Tenant Management</h2>
             <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded-md font-mono">LIVE</span>
           </div>
-          <div className="flex-1 overflow-auto p-2">
+          <div className="flex-1 overflow-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="sticky top-0 bg-[#131315]/90 backdrop-blur-md z-10 text-zinc-500 text-xs uppercase font-semibold">
+              <thead className="sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10 text-zinc-500 text-xs uppercase font-semibold border-b border-white/5 shadow-sm">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Tenant Name</th>
-                  <th className="px-4 py-3 font-medium">Domain / Slug</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium text-right">Est. TPV</th>
-                  <th className="px-4 py-3 font-medium text-center">Action</th>
+                  <th className="px-6 py-4 font-medium">Tenant Name</th>
+                  <th className="px-6 py-4 font-medium">Domain / Slug</th>
+                  <th className="px-6 py-4 font-medium">Type</th>
+                  <th className="px-6 py-4 font-medium text-right">Est. TPV</th>
+                  <th className="px-6 py-4 font-medium text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {tenants.map((t) => (
                   <tr key={t.id} className="hover:bg-white/5 transition-colors group">
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center font-display font-bold text-white">
                           {t.name.charAt(0)}
@@ -155,22 +155,23 @@ export default function GodModePage() {
                         <span className="font-medium text-zinc-200">{t.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 font-mono text-xs">
+                    <td className="px-6 py-4 text-zinc-400 font-mono text-xs">
                       {t.slug}.swiftkds.com
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <span className={`text-[10px] uppercase px-2 py-1 rounded-full font-semibold ${
                         t.settings?.is_foodtruck ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
+                        t.settings?.is_restaurant ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 
                         t.settings?.is_salon ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20' : 
                         'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
                       }`}>
-                        {t.settings?.is_foodtruck ? 'Food Truck' : t.settings?.is_salon ? 'Salon' : 'Agency'}
+                        {t.settings?.is_foodtruck ? 'Food Truck' : t.settings?.is_restaurant ? 'Restaurant' : t.settings?.is_salon ? 'Salon' : 'Agency'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-zinc-300">
+                    <td className="px-6 py-4 text-right font-mono text-zinc-300">
                       ${t.tpv.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleImpersonate(t.id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/10 hover:bg-violet-600/30 border border-violet-500/30 hover:border-violet-500/60 text-violet-300 rounded-lg text-xs font-semibold transition-all shadow-[0_0_10px_rgba(124,58,237,0)] hover:shadow-[0_0_15px_rgba(124,58,237,0.2)]"
