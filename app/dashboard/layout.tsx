@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Zap, Users, LogOut, FileText, Calendar,
-  Settings, UtensilsCrossed, UserCircle2, Bell
+  Settings, UtensilsCrossed, UserCircle2, Bell, TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,6 +22,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [tenantType, setTenantType] = useState<'salon' | 'foodtruck' | 'agency' | null>(null);
   const [tenantName, setTenantName] = useState('');
   const [tenantSettings, setTenantSettings] = useState<any>(null);
+  const [userRole, setUserRole] = useState<'owner' | 'manager' | 'assistant_manager' | 'associate' | null>(null);
 
   // ── Full nav items (sidebar, desktop) ──────────────────────────────
   let navItems: { href: string; icon: React.ElementType; label: string; shortLabel: string }[] = [
@@ -32,23 +33,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     navItems = [
       { href: '/dashboard',          icon: LayoutDashboard, label: 'Salon Overview',         shortLabel: 'Home' },
       { href: '/dashboard/calendar', icon: Calendar,         label: 'Appointments & Calendar', shortLabel: 'Calendar' },
-      { href: '/dashboard/services', icon: Zap,              label: 'Service Menu',           shortLabel: 'Menu' },
-      { href: '/dashboard/clients',  icon: Users,            label: 'Customer Log',           shortLabel: 'Clients' },
-      { href: '/dashboard/settings', icon: Settings,         label: 'Settings',               shortLabel: 'Settings' },
     ];
+    if (userRole !== 'associate') {
+      navItems.push({ href: '/dashboard/services', icon: Zap, label: 'Service Menu', shortLabel: 'Menu' });
+    }
+    navItems.push({ href: '/dashboard/clients',  icon: Users, label: 'Customer Log', shortLabel: 'Clients' });
+    
+    if (userRole === 'manager' || userRole === 'owner') {
+      navItems.push({ href: '/dashboard/reports', icon: TrendingUp, label: 'Analytics', shortLabel: 'Reports' });
+      navItems.push({ href: '/dashboard/settings', icon: Settings, label: 'Settings', shortLabel: 'Settings' });
+    }
+    if (userRole === 'owner') {
+      navItems.push({ href: '/dashboard/audit', icon: FileText, label: 'Audit Logs', shortLabel: 'Audit' });
+    }
   } else if (tenantType === 'foodtruck') {
     navItems = [
       { href: '/dashboard',          icon: LayoutDashboard, label: 'Kitchen Display',  shortLabel: 'KDS' },
       { href: '/dashboard/history',  icon: FileText,        label: 'Order History',    shortLabel: 'History' },
-      { href: '/dashboard/services', icon: Zap,             label: 'Menu Manager',     shortLabel: 'Menu' },
-      { href: '/dashboard/clients',  icon: Users,           label: 'Customer Log',     shortLabel: 'Clients' },
-      { href: '/dashboard/settings', icon: Settings,        label: 'Settings',         shortLabel: 'Settings' },
     ];
     if (tenantSettings?.enable_reservations) {
       navItems.splice(1, 0, { href: '/dashboard/calendar', icon: Calendar, label: 'Reservations', shortLabel: 'Reservations' });
     }
     if (tenantSettings?.enable_catering) {
-      navItems.splice(2, 0, { href: '/dashboard/catering', icon: UtensilsCrossed, label: 'Catering', shortLabel: 'Catering' });
+      navItems.push({ href: '/dashboard/catering', icon: UtensilsCrossed, label: 'Catering', shortLabel: 'Catering' });
+    }
+    if (userRole !== 'associate') {
+      navItems.push({ href: '/dashboard/services', icon: Zap, label: 'Menu Manager', shortLabel: 'Menu' });
+    }
+    navItems.push({ href: '/dashboard/clients',  icon: Users, label: 'Customer Log', shortLabel: 'Clients' });
+
+    if (userRole === 'manager' || userRole === 'owner') {
+      navItems.push({ href: '/dashboard/reports', icon: TrendingUp, label: 'Analytics', shortLabel: 'Reports' });
+      navItems.push({ href: '/dashboard/settings', icon: Settings, label: 'Settings', shortLabel: 'Settings' });
+    }
+    if (userRole === 'owner') {
+      navItems.push({ href: '/dashboard/audit', icon: FileText, label: 'Audit Logs', shortLabel: 'Audit' });
     }
   } else if (tenantType === 'agency') {
     navItems = [
@@ -69,7 +88,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!session) return;
       supabase
         .from('admin_users')
-        .select('is_super_admin, tenants!admin_users_tenant_id_fkey(name, settings)')
+        .select('is_super_admin, role, tenants!admin_users_tenant_id_fkey(name, settings)')
         .eq('user_id', session.user.id)
         .single()
         .then(({ data }: any) => {
@@ -79,6 +98,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           }
           
           if (impersonatedTenantId) {
+            // If impersonating, the user role should be considered 'owner' for full view
+            setUserRole('owner');
             supabase.from('tenants').select('name, settings').eq('id', impersonatedTenantId).single().then(({ data: t }: any) => {
               if (t) {
                 setTenantName(t.name);
@@ -89,6 +110,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               }
             });
           } else {
+            setUserRole(data?.role || 'associate');
             const t = data?.tenants;
             if (t) {
               setTenantName(t.name);
