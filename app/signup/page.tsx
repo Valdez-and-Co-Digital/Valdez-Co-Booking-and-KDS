@@ -103,6 +103,21 @@ export default function SignupPage() {
             </div>
 
             <div>
+              <label htmlFor="referralCode" className="block text-sm font-medium text-zinc-300">
+                Referral / Agency Code <span className="text-zinc-500 text-xs font-normal">(Optional)</span>
+              </label>
+              <div className="mt-1">
+                <input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  className="block w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 placeholder-zinc-600 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors sm:text-sm uppercase"
+                  placeholder="e.g. VALDEZ2026"
+                />
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
                 Password
               </label>

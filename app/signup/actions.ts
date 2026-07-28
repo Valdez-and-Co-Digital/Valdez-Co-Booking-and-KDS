@@ -10,6 +10,7 @@ export async function signUpAction(formData: FormData) {
   const password = formData.get('password') as string;
   const businessName = formData.get('businessName') as string;
   const businessType = formData.get('businessType') as string;
+  const referralCode = formData.get('referralCode') as string;
   
   if (!email || !password || !businessName || !businessType) {
     return { error: 'All fields are required.' };
@@ -50,6 +51,7 @@ export async function signUpAction(formData: FormData) {
       id: tenantId,
       name: businessName,
       slug: slug,
+      referral_code: referralCode ? referralCode.toUpperCase() : null,
       settings: {
         is_salon: businessType === 'salon',
         is_foodtruck: businessType === 'foodtruck',
