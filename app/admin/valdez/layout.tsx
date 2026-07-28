@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/lib/supabase/server';
 import { ImpersonationProvider } from '@/providers/ImpersonationProvider';
 
 export default async function GodModeLayout({
@@ -8,18 +7,7 @@ export default async function GodModeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
+  const supabase = await createServerClient();
 
   const { data: { session } } = await supabase.auth.getSession();
 
