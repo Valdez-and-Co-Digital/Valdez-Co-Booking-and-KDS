@@ -7,6 +7,7 @@ import { Settings, Save, Loader2, Clock, CheckSquare } from 'lucide-react';
 export default function SettingsPage() {
   const supabase = createBrowserClient();
   const [tenant, setTenant] = useState<any>(null);
+  const [isAgency, setIsAgency] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -40,6 +41,7 @@ export default function SettingsPage() {
             setTaxRate(t.settings?.tax_rate ?? 0);
             setTaxInclusive(!!t.settings?.tax_inclusive);
             setPromoCodes(t.settings?.promo_codes || []);
+            setIsAgency(!t.settings?.is_foodtruck && !t.settings?.is_restaurant && !t.settings?.is_salon);
           }
           setLoading(false);
         });
@@ -146,48 +148,52 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="font-medium text-sm">Enable Reservations Calendar</div>
-                  <div className="text-xs text-zinc-500">Show the reservations tab in your sidebar.</div>
+                  <div className="font-medium text-sm">{isAgency ? 'Enable Appointments Calendar' : 'Enable Reservations Calendar'}</div>
+                  <div className="text-xs text-zinc-500">{isAgency ? 'Show the appointments tab in your sidebar to manage meetings with clients.' : 'Show the reservations tab in your sidebar.'}</div>
                 </div>
               </label>
 
-              {/* Catering Toggle */}
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div className="relative flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={enableCatering}
-                    onChange={(e) => setEnableCatering(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div className={`w-11 h-6 rounded-full transition-colors ${enableCatering ? 'bg-violet-600' : 'bg-zinc-700'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${enableCatering ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </div>
-                </div>
-                <div>
-                  <div className="font-medium text-sm">Enable Catering Bookings</div>
-                  <div className="text-xs text-zinc-500">Show the catering booking page in your sidebar. Clients can book corporate events, private parties, and more.</div>
-                </div>
-              </label>
+              {!isAgency && (
+                <>
+                  {/* Catering Toggle */}
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={enableCatering}
+                        onChange={(e) => setEnableCatering(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div className={`w-11 h-6 rounded-full transition-colors ${enableCatering ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${enableCatering ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Enable Catering Bookings</div>
+                      <div className="text-xs text-zinc-500">Show the catering booking page in your sidebar. Clients can book corporate events, private parties, and more.</div>
+                    </div>
+                  </label>
 
-              {/* Require Order Confirmation Toggle */}
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div className="relative flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={requireOrderConfirmation}
-                    onChange={(e) => setRequireOrderConfirmation(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div className={`w-11 h-6 rounded-full transition-colors ${requireOrderConfirmation ? 'bg-violet-600' : 'bg-zinc-700'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${requireOrderConfirmation ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </div>
-                </div>
-                <div>
-                  <div className="font-medium text-sm">Require Order Confirmation</div>
-                  <div className="text-xs text-zinc-500">New orders will go to a "Pending" tab on the KDS and must be accepted manually before starting.</div>
-                </div>
-              </label>
+                  {/* Require Order Confirmation Toggle */}
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={requireOrderConfirmation}
+                        onChange={(e) => setRequireOrderConfirmation(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div className={`w-11 h-6 rounded-full transition-colors ${requireOrderConfirmation ? 'bg-violet-600' : 'bg-zinc-700'}`}>
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${requireOrderConfirmation ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Require Order Confirmation</div>
+                      <div className="text-xs text-zinc-500">New orders will go to a "Pending" tab on the KDS and must be accepted manually before starting.</div>
+                    </div>
+                  </label>
+                </>
+              )}
             </div>
 
             {/* Billing & Checkout Features */}
@@ -278,7 +284,24 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-        <div className="flex justify-end">
+          
+          <div className="glass-card p-6 space-y-4 md:hidden border-red-500/20">
+            <h2 className="text-lg font-semibold flex items-center gap-2 text-red-400">
+              Account
+            </h2>
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/login';
+              }}
+              className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-3 rounded-xl font-semibold transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+          
+        <div className="flex justify-end pb-8">
           <button
             type="submit"
             disabled={saving}
