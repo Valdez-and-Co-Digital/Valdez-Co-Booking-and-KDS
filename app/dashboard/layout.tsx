@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { initAudio } from '@/hooks/useOrdersRealtime';
+import { useImpersonation } from '@/providers/ImpersonationProvider';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const supabase = createBrowserClient();
+  const { impersonatedTenantId, setImpersonatedTenantId } = useImpersonation();
   const [tenantType, setTenantType] = useState<'salon' | 'foodtruck' | 'agency' | null>(null);
   const [tenantName, setTenantName] = useState('');
   const [tenantSettings, setTenantSettings] = useState<any>(null);
@@ -67,25 +69,38 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!session) return;
       supabase
         .from('admin_users')
-        .select('is_super_admin, tenants(name, settings)')
+        .select('is_super_admin, tenants!admin_users_tenant_id_fkey(name, settings)')
         .eq('user_id', session.user.id)
         .single()
-        .then(({ data }: { data: { is_super_admin: boolean; tenants: { name: string; settings: Record<string, unknown> } | null } | null }) => {
-          if (data?.is_super_admin) {
-            window.location.href = '/agency';
+        .then(({ data }: any) => {
+          if (data?.is_super_admin && !impersonatedTenantId) {
+            window.location.href = '/admin/valdez';
             return;
           }
-          const t = data?.tenants;
-          if (t) {
-            setTenantName(t.name);
-            setTenantSettings(t.settings);
-            if (t.settings?.is_foodtruck) setTenantType('foodtruck');
-            else if (t.settings?.is_salon) setTenantType('salon');
-            else setTenantType('agency');
+          
+          if (impersonatedTenantId) {
+            supabase.from('tenants').select('name, settings').eq('id', impersonatedTenantId).single().then(({ data: t }: any) => {
+              if (t) {
+                setTenantName(t.name);
+                setTenantSettings(t.settings);
+                if (t.settings?.is_foodtruck) setTenantType('foodtruck');
+                else if (t.settings?.is_salon) setTenantType('salon');
+                else setTenantType('agency');
+              }
+            });
+          } else {
+            const t = data?.tenants;
+            if (t) {
+              setTenantName(t.name);
+              setTenantSettings(t.settings);
+              if (t.settings?.is_foodtruck) setTenantType('foodtruck');
+              else if (t.settings?.is_salon) setTenantType('salon');
+              else setTenantType('agency');
+            }
           }
         });
     });
-  }, [supabase]);
+  }, [supabase, impersonatedTenantId]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -168,6 +183,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6"
           onClick={() => initAudio()}
         >
+          {impersonatedTenantId && (
+            <div className="mb-4 p-3 bg-violet-600/20 border border-violet-500/50 rounded-xl flex items-center justify-between">
+              <span className="text-violet-300 text-sm font-medium">
+                God Mode Active: Viewing as {tenantName}
+              </span>
+              <button
+                onClick={() => {
+                  setImpersonatedTenantId(null);
+                  window.location.href = '/admin/valdez';
+                }}
+                className="text-xs bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Exit
+              </button>
+            </div>
+          )}
           {children}
         </main>
       </div>
