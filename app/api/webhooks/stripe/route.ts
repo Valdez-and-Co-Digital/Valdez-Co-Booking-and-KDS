@@ -73,6 +73,82 @@ export async function POST(req: Request) {
       break;
     }
 
+    // ── Agency Invoice Events ──────────────────────────────────────────────
+    case 'invoice.paid': {
+      const invoice = event.data.object as Stripe.Invoice;
+      await supabase
+        .from('agency_invoices')
+        .update({
+          status: 'paid',
+          paid_at: invoice.status_transitions.paid_at
+            ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+            : new Date().toISOString(),
+          stripe_invoice_pdf: invoice.invoice_pdf,
+          stripe_invoice_url: invoice.hosted_invoice_url,
+        })
+        .eq('stripe_invoice_id', invoice.id);
+      break;
+    }
+
+    case 'invoice.payment_failed': {
+      const invoice = event.data.object as Stripe.Invoice;
+      await supabase
+        .from('agency_invoices')
+        .update({ status: 'overdue' })
+        .eq('stripe_invoice_id', invoice.id);
+      break;
+    }
+
+    case 'invoice.created': {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subId = invoice.subscription as string | null;
+      if (!subId) break;
+
+      const { data: existing } = await supabase
+        .from('agency_invoices')
+        .select('id')
+        .eq('stripe_invoice_id', invoice.id)
+        .maybeSingle();
+
+      if (!existing) {
+        const { data: parentInvoice } = await supabase
+          .from('agency_invoices')
+          .select('client_id, agency_tenant_id, description, coupon_applied')
+          .eq('stripe_subscription_id', subId)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (parentInvoice) {
+          await supabase.from('agency_invoices').insert({
+            agency_tenant_id: parentInvoice.agency_tenant_id,
+            client_id: parentInvoice.client_id,
+            stripe_invoice_id: invoice.id,
+            stripe_subscription_id: subId,
+            amount_cents: invoice.amount_due,
+            description: parentInvoice.description,
+            is_recurring: true,
+            payment_type: 'stripe',
+            status: 'sent',
+            coupon_applied: parentInvoice.coupon_applied,
+            stripe_invoice_url: invoice.hosted_invoice_url,
+            stripe_invoice_pdf: invoice.invoice_pdf,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'customer.subscription.deleted': {
+      const sub = event.data.object as Stripe.Subscription;
+      await supabase
+        .from('agency_invoices')
+        .update({ status: 'void' })
+        .eq('stripe_subscription_id', sub.id)
+        .eq('status', 'sent');
+      break;
+    }
+
     default:
       console.log('[webhook] Unhandled event type:', event.type);
   }
