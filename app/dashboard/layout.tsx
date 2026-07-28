@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Zap, Users, LogOut, FileText, Calendar,
-  Settings, UtensilsCrossed, UserCircle2, Bell, TrendingUp
+  Settings, UtensilsCrossed, UserCircle2, Bell, TrendingUp, ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -79,6 +79,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       { href: '/dashboard/team',      icon: Users,           label: 'Team Management',     shortLabel: 'Team' },
       { href: '/dashboard/settings',  icon: Settings,        label: 'Settings',            shortLabel: 'Settings' },
     ];
+    if (userRole === 'owner') {
+      navItems.push({ href: '/admin/valdez', icon: ShieldAlert, label: 'God Mode', shortLabel: 'God Mode' });
+    }
   }
 
   // ── Bottom nav: take up to 4 primary items + always show Profile ──
@@ -95,11 +98,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         .eq('user_id', session.user.id)
         .single()
         .then(({ data }: any) => {
-          if (data?.is_super_admin && !impersonatedTenantId) {
-            window.location.href = '/admin/valdez';
-            return;
-          }
-          
           if (impersonatedTenantId) {
             // If impersonating, the user role should be considered 'owner' for full view
             setUserRole('owner');

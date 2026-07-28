@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { useImpersonation } from '@/providers/ImpersonationProvider';
-import { Loader2, TrendingUp, BarChart3, Users, Clock, AlertCircle } from 'lucide-react';
+import { Loader2, TrendingUp, BarChart3, Users, Clock, AlertCircle, Activity } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
