@@ -16,7 +16,12 @@ const ImpersonationContext = createContext<ImpersonationContextType>({
 });
 
 export function ImpersonationProvider({ children }: { children: React.ReactNode }) {
-  const [impersonatedTenantId, setImpersonatedTenantIdState] = useState<string | null>(null);
+  const [impersonatedTenantId, setImpersonatedTenantIdState] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('swiftkds_impersonated_tenant');
+    }
+    return null;
+  });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const supabase = createBrowserClient();
 
@@ -32,8 +37,6 @@ export function ImpersonationProvider({ children }: { children: React.ReactNode 
           .then(({ data }) => {
             if (data?.is_super_admin) {
               setIsSuperAdmin(true);
-              const saved = localStorage.getItem('swiftkds_impersonated_tenant');
-              if (saved) setImpersonatedTenantIdState(saved);
             }
           });
       }
@@ -41,7 +44,6 @@ export function ImpersonationProvider({ children }: { children: React.ReactNode 
   }, [supabase]);
 
   const setImpersonatedTenantId = (id: string | null) => {
-    if (!isSuperAdmin) return;
     setImpersonatedTenantIdState(id);
     if (id) {
       localStorage.setItem('swiftkds_impersonated_tenant', id);

@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
-import { ImpersonationProvider } from '@/providers/ImpersonationProvider';
 
 export default async function GodModeLayout({
   children,
@@ -26,9 +25,5 @@ export default async function GodModeLayout({
     redirect('/dashboard');
   }
 
-  return (
-    <ImpersonationProvider>
-      {children}
-    </ImpersonationProvider>
-  );
+  return <>{children}</>;
 }
