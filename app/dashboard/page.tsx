@@ -15,7 +15,8 @@ export default async function DashboardOverviewPage() {
   }
 
   // Check if we are impersonating
-  const impersonatedTenantId = cookies().get('swiftkds_impersonated_tenant')?.value;
+  const cookieStore = await cookies();
+  const impersonatedTenantId = cookieStore.get('swiftkds_impersonated_tenant')?.value;
 
   let tenant: any = null;
 

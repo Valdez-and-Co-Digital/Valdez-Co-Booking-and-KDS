@@ -14,7 +14,8 @@ export default async function ClientsPage() {
   if (!session) redirect('/login');
 
   // Check impersonation cookie
-  const impersonatedTenantId = cookies().get('swiftkds_impersonated_tenant')?.value;
+  const cookieStore = await cookies();
+  const impersonatedTenantId = cookieStore.get('swiftkds_impersonated_tenant')?.value;
 
   const { data: adminUser } = await adminSupabase
     .from('admin_users')
