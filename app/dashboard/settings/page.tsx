@@ -93,40 +93,43 @@ export default function SettingsPage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {tenant?.settings?.is_foodtruck && (
-          <div className="glass-card p-6 space-y-6">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Clock className="w-5 h-5 text-emerald-400" />
-              Kitchen Display (KDS) Settings
-            </h2>
+        <div className="glass-card p-6 space-y-6">
+          {tenant?.settings?.is_foodtruck && (
+            <>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-emerald-400" />
+                Kitchen Display (KDS) Settings
+              </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300">Warning Time (minutes)</label>
-                <input
-                  type="number" min="1" required value={warningMins}
-                  onChange={(e) => setWarningMins(parseInt(e.target.value))}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
-                />
-                <p className="text-xs text-zinc-500">Tickets turn yellow after this time.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">Warning Time (minutes)</label>
+                  <input
+                    type="number" min="1" required value={warningMins}
+                    onChange={(e) => setWarningMins(parseInt(e.target.value))}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                  />
+                  <p className="text-xs text-zinc-500">Tickets turn yellow after this time.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">Overdue Time (minutes)</label>
+                  <input
+                    type="number" min="1" required value={overdueMins}
+                    onChange={(e) => setOverdueMins(parseInt(e.target.value))}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                  />
+                  <p className="text-xs text-zinc-500">Tickets turn red after this time.</p>
+                </div>
               </div>
+            </>
+          )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300">Overdue Time (minutes)</label>
-                <input
-                  type="number" min="1" required value={overdueMins}
-                  onChange={(e) => setOverdueMins(parseInt(e.target.value))}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-violet-500 outline-none"
-                />
-                <p className="text-xs text-zinc-500">Tickets turn red after this time.</p>
-              </div>
-            </div>
-
-            {/* Restaurant Features */}
-            <div className="pt-4 border-t border-white/10 space-y-4">
+            {/* Booking / Orders Features */}
+            <div className={`pt-4 ${tenant?.settings?.is_foodtruck ? 'border-t border-white/10' : ''} space-y-4`}>
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <CheckSquare className="w-5 h-5 text-emerald-400" />
-                Restaurant Features
+                Feature Toggles
               </h2>
 
               {/* Reservations Toggle */}
@@ -275,7 +278,8 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-        )}
+            </div>
+          </div>
 
         <div className="flex justify-end">
           <button

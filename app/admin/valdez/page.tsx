@@ -133,8 +133,8 @@ export default function GodModePage() {
             <h2 className="text-lg font-display font-semibold text-white">Tenant Management</h2>
             <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded-md font-mono">LIVE</span>
           </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
+          <div className="flex-1 overflow-x-auto overflow-y-auto w-full">
+            <table className="w-full text-left text-sm whitespace-nowrap min-w-[700px]">
               <thead className="sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10 text-zinc-500 text-xs uppercase font-semibold border-b border-white/5 shadow-sm">
                 <tr>
                   <th className="px-6 py-4 font-medium">Tenant Name</th>
