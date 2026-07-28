@@ -40,6 +40,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     navItems.push({ href: '/dashboard/clients',  icon: Users, label: 'Customer Log', shortLabel: 'Clients' });
     
     if (userRole === 'manager' || userRole === 'owner') {
+      navItems.push({ href: '/dashboard/team', icon: Users, label: 'Team & Staff', shortLabel: 'Team' });
       navItems.push({ href: '/dashboard/reports', icon: TrendingUp, label: 'Analytics', shortLabel: 'Reports' });
       navItems.push({ href: '/dashboard/settings', icon: Settings, label: 'Settings', shortLabel: 'Settings' });
     }
@@ -63,6 +64,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     navItems.push({ href: '/dashboard/clients',  icon: Users, label: 'Customer Log', shortLabel: 'Clients' });
 
     if (userRole === 'manager' || userRole === 'owner') {
+      navItems.push({ href: '/dashboard/team', icon: Users, label: 'Team & Staff', shortLabel: 'Team' });
       navItems.push({ href: '/dashboard/reports', icon: TrendingUp, label: 'Analytics', shortLabel: 'Reports' });
       navItems.push({ href: '/dashboard/settings', icon: Settings, label: 'Settings', shortLabel: 'Settings' });
     }
@@ -74,6 +76,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       { href: '/dashboard',           icon: LayoutDashboard, label: 'Agency Overview',    shortLabel: 'Home' },
       { href: '/dashboard/clients',   icon: Users,           label: 'Clients',             shortLabel: 'Clients' },
       { href: '/dashboard/invoices',  icon: FileText,        label: 'Invoices & Billing',  shortLabel: 'Invoices' },
+      { href: '/dashboard/team',      icon: Users,           label: 'Team Management',     shortLabel: 'Team' },
       { href: '/dashboard/settings',  icon: Settings,        label: 'Settings',            shortLabel: 'Settings' },
     ];
   }
