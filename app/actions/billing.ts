@@ -39,10 +39,15 @@ export async function createClient(formData: FormData) {
   const phone = formData.get('phone') as string;
   const serviceTier = formData.get('service_tier') as string;
   const customPriceRaw = formData.get('custom_price') as string;
+  const platformFeeRaw = formData.get('platform_fee') as string;
   const notes = formData.get('notes') as string;
 
   const customPriceCents = customPriceRaw
     ? Math.round(parseFloat(customPriceRaw) * 100)
+    : null;
+
+  const platformFeePercent = platformFeeRaw && platformFeeRaw.trim() !== ''
+    ? parseFloat(platformFeeRaw)
     : null;
 
   const { error } = await adminSupabase.from('agency_clients').insert({
@@ -53,6 +58,7 @@ export async function createClient(formData: FormData) {
     phone: phone || null,
     service_tier: serviceTier,
     custom_price_cents: customPriceCents,
+    platform_fee_percent: platformFeePercent,
     notes: notes || null,
     status: 'prospect',
   });

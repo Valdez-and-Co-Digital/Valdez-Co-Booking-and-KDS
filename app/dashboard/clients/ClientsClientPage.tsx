@@ -32,6 +32,7 @@ interface Client {
   phone: string | null;
   service_tier: string;
   custom_price_cents: number | null;
+  platform_fee_percent: number | null;
   status: string;
   notes: string | null;
   created_at: string;
@@ -46,7 +47,7 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
   // Form state
   const [form, setForm] = useState({
     name: '', business_name: '', email: '', phone: '',
-    service_tier: 'web_only', custom_price: '', notes: '',
+    service_tier: 'web_only', custom_price: '', platform_fee: '', notes: '',
   });
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -56,7 +57,7 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
     startTransition(async () => {
       await createClient(fd);
       setShowAddModal(false);
-      setForm({ name: '', business_name: '', email: '', phone: '', service_tier: 'web_only', custom_price: '', notes: '' });
+      setForm({ name: '', business_name: '', email: '', phone: '', service_tier: 'web_only', custom_price: '', platform_fee: '', notes: '' });
       window.location.reload();
     });
   };
@@ -189,10 +190,22 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
                   )}
                 </div>
 
-                {/* Price */}
+                {/* Price & Fee */}
                 <div className="flex items-center justify-between pt-3 border-t border-white/5">
                   <span className="text-xs text-zinc-500">Monthly Rate</span>
                   <span className="font-mono font-bold text-white">{price}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-500">Platform Fee</span>
+                  <span className={`text-xs font-mono font-semibold ${
+                    client.platform_fee_percent !== null && client.platform_fee_percent < 1
+                      ? 'text-emerald-400'
+                      : 'text-zinc-400'
+                  }`}>
+                    {client.platform_fee_percent !== null
+                      ? `${client.platform_fee_percent}%${client.platform_fee_percent < 1 ? ' ✦' : ''}`
+                      : '1% (default)'}
+                  </span>
                 </div>
               </div>
             );
@@ -265,13 +278,27 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-zinc-400 mb-1 block">Custom Monthly Price (leave blank for default)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
-                  <input type="number" min="0" step="0.01" value={form.custom_price} onChange={e => setForm({...form, custom_price: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
-                    placeholder={`${((DEFAULT_PRICES as any)[form.service_tier] / 100).toFixed(0)}`} />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1 block">Custom Monthly Price</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                    <input type="number" min="0" step="0.01" value={form.custom_price} onChange={e => setForm({...form, custom_price: e.target.value})}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                      placeholder={`${((DEFAULT_PRICES as any)[form.service_tier] / 100).toFixed(0)}`} />
+                  </div>
+                  <p className="text-[10px] text-zinc-600 mt-1">Leave blank for default</p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1 block">Platform Fee %</label>
+                  <div className="relative">
+                    <input type="number" min="0" max="100" step="0.01" value={form.platform_fee} onChange={e => setForm({...form, platform_fee: e.target.value})}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 pr-7 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                      placeholder="1" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">%</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-600 mt-1">Default: 1%</p>
                 </div>
               </div>
 
