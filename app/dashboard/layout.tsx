@@ -67,10 +67,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!session) return;
       supabase
         .from('admin_users')
-        .select('tenants(name, settings)')
+        .select('is_super_admin, tenants(name, settings)')
         .eq('user_id', session.user.id)
         .single()
-        .then(({ data }: { data: { tenants: { name: string; settings: Record<string, unknown> } | null } | null }) => {
+        .then(({ data }: { data: { is_super_admin: boolean; tenants: { name: string; settings: Record<string, unknown> } | null } | null }) => {
+          if (data?.is_super_admin) {
+            window.location.href = '/agency';
+            return;
+          }
           const t = data?.tenants;
           if (t) {
             setTenantName(t.name);
