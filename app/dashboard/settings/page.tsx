@@ -278,9 +278,6 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-            </div>
-          </div>
-
         <div className="flex justify-end">
           <button
             type="submit"
