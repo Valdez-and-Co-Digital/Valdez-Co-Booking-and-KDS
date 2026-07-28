@@ -54,6 +54,7 @@ export async function signUpAction(formData: FormData) {
       referral_code: referralCode ? referralCode.toUpperCase() : null,
       settings: {
         is_salon: businessType === 'salon',
+        is_restaurant: businessType === 'restaurant',
         is_foodtruck: businessType === 'foodtruck',
         is_agency: businessType === 'agency',
       },

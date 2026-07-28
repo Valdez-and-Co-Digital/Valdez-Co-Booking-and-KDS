@@ -79,7 +79,8 @@ export default function SignupPage() {
                 >
                   <option value="" disabled selected>Select your industry</option>
                   <option value="salon">Salon / Barbershop</option>
-                  <option value="foodtruck">Restaurant / Food Truck</option>
+                  <option value="restaurant">Restaurant</option>
+                  <option value="foodtruck">Food Truck</option>
                   <option value="agency">Web Design Agency</option>
                 </select>
               </div>

@@ -83,7 +83,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               if (t) {
                 setTenantName(t.name);
                 setTenantSettings(t.settings);
-                if (t.settings?.is_foodtruck) setTenantType('foodtruck');
+                if (t.settings?.is_foodtruck || t.settings?.is_restaurant) setTenantType('foodtruck');
                 else if (t.settings?.is_salon) setTenantType('salon');
                 else setTenantType('agency');
               }
@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             if (t) {
               setTenantName(t.name);
               setTenantSettings(t.settings);
-              if (t.settings?.is_foodtruck) setTenantType('foodtruck');
+              if (t.settings?.is_foodtruck || t.settings?.is_restaurant) setTenantType('foodtruck');
               else if (t.settings?.is_salon) setTenantType('salon');
               else setTenantType('agency');
             }
