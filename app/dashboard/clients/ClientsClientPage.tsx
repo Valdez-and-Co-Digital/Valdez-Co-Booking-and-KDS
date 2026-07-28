@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react';
 import { createClient, updateClientStatus, deleteClient } from '@/app/actions/billing';
-import { DEFAULT_PRICES } from '@/app/actions/billing';
 import { Users, Plus, X, Briefcase, Monitor, Layers, MoreVertical, Mail, Phone, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const TIER_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -38,7 +37,13 @@ interface Client {
   created_at: string;
 }
 
-export default function ClientsClientPage({ initialClients }: { initialClients: Client[] }) {
+export default function ClientsClientPage({ 
+  initialClients, 
+  defaultPrices 
+}: { 
+  initialClients: Client[],
+  defaultPrices: { web_only: number; web_and_kds: number; platform_fee: number }
+}) {
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -80,7 +85,7 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
   };
 
   const defaultPrice = (tier: string) =>
-    `$${((DEFAULT_PRICES as any)[tier] / 100).toFixed(0)}/mo`;
+    `$${((defaultPrices as any)[tier] / 100).toFixed(0)}/mo`;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -203,8 +208,8 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
                       : 'text-zinc-400'
                   }`}>
                     {client.platform_fee_percent !== null
-                      ? `${client.platform_fee_percent}%${client.platform_fee_percent < 1 ? ' ✦' : ''}`
-                      : '1% (default)'}
+                      ? `${client.platform_fee_percent}%${client.platform_fee_percent < defaultPrices.platform_fee ? ' ✦' : ''}`
+                      : `${defaultPrices.platform_fee}% (default)`}
                   </span>
                 </div>
               </div>
@@ -285,7 +290,7 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
                     <input type="number" min="0" step="0.01" value={form.custom_price} onChange={e => setForm({...form, custom_price: e.target.value})}
                       className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
-                      placeholder={`${((DEFAULT_PRICES as any)[form.service_tier] / 100).toFixed(0)}`} />
+                      placeholder={`${((defaultPrices as any)[form.service_tier] / 100).toFixed(0)}`} />
                   </div>
                   <p className="text-[10px] text-zinc-600 mt-1">Leave blank for default</p>
                 </div>
@@ -295,10 +300,10 @@ export default function ClientsClientPage({ initialClients }: { initialClients: 
                   <div className="relative">
                     <input type="number" min="0" max="100" step="0.01" value={form.platform_fee} onChange={e => setForm({...form, platform_fee: e.target.value})}
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-3 pr-7 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
-                      placeholder="1" />
+                      placeholder={`${defaultPrices.platform_fee}`} />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">%</span>
                   </div>
-                  <p className="text-[10px] text-zinc-600 mt-1">Default: 1%</p>
+                  <p className="text-[10px] text-zinc-600 mt-1">Default: {defaultPrices.platform_fee}%</p>
                 </div>
               </div>
 

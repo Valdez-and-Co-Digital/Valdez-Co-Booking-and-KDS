@@ -2,6 +2,7 @@ import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import InvoicesClientPage from './InvoicesClientPage';
+import { getAgencyBillingDefaults } from '@/app/actions/billing';
 
 export default async function InvoicesPage() {
   const supabase = await createServerClient();
@@ -31,10 +32,13 @@ export default async function InvoicesPage() {
       .order('business_name'),
   ]);
 
+    const defaultPrices = await getAgencyBillingDefaults();
+
   return (
     <InvoicesClientPage
       initialInvoices={invoices || []}
       clients={clients || []}
+      defaultPrices={defaultPrices}
     />
   );
 }

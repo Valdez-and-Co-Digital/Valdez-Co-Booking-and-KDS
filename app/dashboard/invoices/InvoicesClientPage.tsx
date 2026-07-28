@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { markCashPaid, voidInvoice, sendInvoice } from '@/app/actions/billing';
-import { DEFAULT_PRICES } from '@/app/actions/billing';
 import {
   FileText, Plus, CheckCircle, Clock, AlertCircle, XCircle,
   Download, ExternalLink, DollarSign, RefreshCw, Banknote, X
@@ -47,6 +46,7 @@ export default function InvoicesClientPage({
 }: {
   initialInvoices: Invoice[];
   clients: Client[];
+  defaultPrices: { web_only: number; web_and_kds: number; platform_fee: number };
 }) {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [showNewModal, setShowNewModal] = useState(false);
@@ -68,7 +68,7 @@ export default function InvoicesClientPage({
     const client = clients.find(c => c.id === id);
     setSelectedClientId(id);
     if (client) {
-      const price = client.custom_price_cents ?? (DEFAULT_PRICES as any)[client.service_tier] ?? 9900;
+      const price = client.custom_price_cents ?? (defaultPrices as any)[client.service_tier] ?? 9900;
       setAmountDollars((price / 100).toFixed(2));
       setDescription(client.service_tier === 'web_and_kds' ? 'Web + KDS Platform — Monthly Service' : 'Web Platform — Monthly Service');
     }

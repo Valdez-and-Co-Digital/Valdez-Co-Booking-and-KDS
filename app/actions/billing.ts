@@ -5,12 +5,6 @@ import { createAdminClient, createServerClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type Stripe from 'stripe';
 
-// Default prices in cents
-export const DEFAULT_PRICES = {
-  web_only: 9900,      // $99/month
-  web_and_kds: 19900,  // $199/month
-};
-
 async function getAgencyTenantId(): Promise<string> {
   const supabase = await createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -25,6 +19,23 @@ async function getAgencyTenantId(): Promise<string> {
 
   if (!data?.tenant_id) throw new Error('No tenant found');
   return data.tenant_id;
+}
+
+export async function getAgencyBillingDefaults() {
+  const tenantId = await getAgencyTenantId();
+  const adminSupabase = createAdminClient();
+  const { data } = await adminSupabase
+    .from('tenants')
+    .select('settings')
+    .eq('id', tenantId)
+    .single();
+
+  const billing = data?.settings?.agency_billing || {};
+  return {
+    web_only: parseInt(billing.web_only_price || '99') * 100,
+    web_and_kds: parseInt(billing.web_and_kds_price || '199') * 100,
+    platform_fee: parseFloat(billing.platform_fee || '1'),
+  };
 }
 
 // ── CLIENTS ──────────────────────────────────────────────────────────────────

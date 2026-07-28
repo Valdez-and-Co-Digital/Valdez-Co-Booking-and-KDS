@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import ClientsClientPage from './ClientsClientPage';
 
+import { getAgencyBillingDefaults } from '@/app/actions/billing';
 // Re-export existing salon/restaurant clients page for non-agency tenants
 import SalonClientsPage from './SalonClientsPage';
 
@@ -48,7 +49,9 @@ export default async function ClientsPage() {
       .eq('agency_tenant_id', tenantId!)
       .order('created_at', { ascending: false });
 
-    return <ClientsClientPage initialClients={agencyClients || []} />;
+    const defaultPrices = await getAgencyBillingDefaults();
+
+    return <ClientsClientPage initialClients={agencyClients || []} defaultPrices={defaultPrices} />;
   }
 
   // Non-agency: render the existing salon/restaurant clients component

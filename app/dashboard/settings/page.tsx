@@ -17,9 +17,13 @@ export default function SettingsPage() {
   const [enableReservations, setEnableReservations] = useState(false);
   const [enableCatering, setEnableCatering] = useState(false);
   const [requireOrderConfirmation, setRequireOrderConfirmation] = useState(false);
-  const [taxRate, setTaxRate] = useState(0);
   const [taxInclusive, setTaxInclusive] = useState(false);
   const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
+
+  // Agency Billing settings
+  const [webOnlyPrice, setWebOnlyPrice] = useState('99');
+  const [webAndKdsPrice, setWebAndKdsPrice] = useState('199');
+  const [platformFee, setPlatformFee] = useState('1');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -42,6 +46,12 @@ export default function SettingsPage() {
             setTaxInclusive(!!t.settings?.tax_inclusive);
             setPromoCodes(t.settings?.promo_codes || []);
             setIsAgency(!t.settings?.is_foodtruck && !t.settings?.is_restaurant && !t.settings?.is_salon);
+            
+            if (t.settings?.agency_billing) {
+              setWebOnlyPrice(t.settings.agency_billing.web_only_price || '99');
+              setWebAndKdsPrice(t.settings.agency_billing.web_and_kds_price || '199');
+              setPlatformFee(t.settings.agency_billing.platform_fee || '1');
+            }
           }
           setLoading(false);
         });
@@ -63,6 +73,11 @@ export default function SettingsPage() {
       tax_rate: taxRate,
       tax_inclusive: taxInclusive,
       promo_codes: promoCodes,
+      agency_billing: isAgency ? {
+        web_only_price: webOnlyPrice,
+        web_and_kds_price: webAndKdsPrice,
+        platform_fee: platformFee,
+      } : undefined,
     };
 
     const { error } = await supabase
@@ -235,54 +250,102 @@ export default function SettingsPage() {
                 </div>
               </label>
 
-              <div className="space-y-3 pt-2 border-t border-white/5">
-                <label className="text-sm font-medium text-zinc-300">Promo Codes</label>
-                {promoCodes.map((promo, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input
-                      type="text" value={promo.code} placeholder="Code (e.g. SUMMER20)"
-                      onChange={e => {
-                        const newPromos = [...promoCodes];
-                        newPromos[idx].code = e.target.value.toUpperCase();
-                        setPromoCodes(newPromos);
-                      }}
-                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none uppercase"
-                    />
-                    <select
-                      value={promo.discountType}
-                      onChange={e => {
-                        const newPromos = [...promoCodes];
-                        newPromos[idx].discountType = e.target.value as any;
-                        setPromoCodes(newPromos);
-                      }}
-                      className="bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
-                    >
-                      <option value="percentage">% Off</option>
-                      <option value="fixed">$ Off</option>
-                    </select>
-                    <input
-                      type="number" value={promo.discountValue} step={promo.discountType === 'percentage' ? "1" : "0.01"} min="0"
-                      onChange={e => {
-                        const newPromos = [...promoCodes];
-                        newPromos[idx].discountValue = parseFloat(e.target.value) || 0;
-                        setPromoCodes(newPromos);
-                      }}
-                      className="w-20 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
-                    />
-                    <button type="button" onClick={() => setPromoCodes(promoCodes.filter((_, i) => i !== idx))} className="p-2 text-red-400 hover:bg-white/10 rounded-lg">
-                      ✕
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setPromoCodes([...promoCodes, { code: '', discountType: 'percentage', discountValue: 10 }])}
-                  className="text-sm text-violet-400 hover:text-violet-300 font-medium flex items-center gap-1"
-                >
-                  + Add Promo Code
-                </button>
-              </div>
+              {!isAgency && (
+                <div className="space-y-3 pt-2 border-t border-white/5">
+                  <label className="text-sm font-medium text-zinc-300">Point-of-Sale (In-Store) Promo Codes</label>
+                  <p className="text-xs text-zinc-500 mb-2">These promo codes can be applied to orders placed at the KDS register.</p>
+                  {promoCodes.map((promo, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text" value={promo.code} placeholder="Code (e.g. SUMMER20)"
+                        onChange={e => {
+                          const newPromos = [...promoCodes];
+                          newPromos[idx].code = e.target.value.toUpperCase();
+                          setPromoCodes(newPromos);
+                        }}
+                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none uppercase"
+                      />
+                      <select
+                        value={promo.discountType}
+                        onChange={e => {
+                          const newPromos = [...promoCodes];
+                          newPromos[idx].discountType = e.target.value as any;
+                          setPromoCodes(newPromos);
+                        }}
+                        className="bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      >
+                        <option value="percentage">% Off</option>
+                        <option value="fixed">$ Off</option>
+                      </select>
+                      <input
+                        type="number" value={promo.discountValue} step={promo.discountType === 'percentage' ? "1" : "0.01"} min="0"
+                        onChange={e => {
+                          const newPromos = [...promoCodes];
+                          newPromos[idx].discountValue = parseFloat(e.target.value) || 0;
+                          setPromoCodes(newPromos);
+                        }}
+                        className="w-20 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      />
+                      <button type="button" onClick={() => setPromoCodes(promoCodes.filter((_, i) => i !== idx))} className="p-2 text-red-400 hover:bg-white/10 rounded-lg">
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setPromoCodes([...promoCodes, { code: '', discountType: 'percentage', discountValue: 10 }])}
+                    className="text-sm text-violet-400 hover:text-violet-300 font-medium flex items-center gap-1"
+                  >
+                    + Add POS Promo Code
+                  </button>
+                </div>
+              )}
             </div>
+
+            {isAgency && (
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-emerald-400" />
+                  Agency Billing Defaults
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-300">Default 'Web Only' Monthly Price</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                      <input
+                        type="number" min="0" step="1" required value={webOnlyPrice}
+                        onChange={(e) => setWebOnlyPrice(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pl-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-300">Default 'Web + KDS' Monthly Price</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                      <input
+                        type="number" min="0" step="1" required value={webAndKdsPrice}
+                        onChange={(e) => setWebAndKdsPrice(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pl-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-2 max-w-sm">
+                    <label className="text-sm font-medium text-zinc-300">Global Platform Fee %</label>
+                    <div className="relative">
+                      <input
+                        type="number" min="0" step="0.01" max="100" required value={platformFee}
+                        onChange={(e) => setPlatformFee(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pr-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">%</span>
+                    </div>
+                    <p className="text-xs text-zinc-500">This fee is skimmed automatically via Stripe Connect. You can override it per-client when adding them to your CRM.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="glass-card p-6 space-y-4 md:hidden border-red-500/20">

@@ -15,13 +15,17 @@ export default async function PromotionsPage() {
     .single();
 
   const tenantId = adminUser?.tenant_id;
-  if (!tenantId) return null;
+  if (!tenantId) return <div className="p-8 text-zinc-400 text-center">No tenant found.</div>;
 
-  const { data: coupons } = await adminSupabase
-    .from('agency_coupons')
-    .select('*')
-    .eq('agency_tenant_id', tenantId)
-    .order('created_at', { ascending: false });
+  try {
+    const { data: coupons } = await adminSupabase
+      .from('agency_coupons')
+      .select('*')
+      .eq('agency_tenant_id', tenantId)
+      .order('created_at', { ascending: false });
 
-  return <PromotionsClientPage initialCoupons={coupons || []} />;
+    return <PromotionsClientPage initialCoupons={coupons || []} />;
+  } catch (err: any) {
+    return <div className="p-8 text-red-400">Failed to load promotions: {err.message}</div>;
+  }
 }
