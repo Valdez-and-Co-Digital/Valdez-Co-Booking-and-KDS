@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [enableReservations, setEnableReservations] = useState(false);
   const [enableCatering, setEnableCatering] = useState(false);
   const [requireOrderConfirmation, setRequireOrderConfirmation] = useState(false);
+  const [taxRate, setTaxRate] = useState(0);
   const [taxInclusive, setTaxInclusive] = useState(false);
   const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
 
