@@ -35,17 +35,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-700 to-indigo-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-violet-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md animate-slide-up">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl">
-            <Zap className="w-8 h-8 text-white drop-shadow-md" />
+          <div className="w-16 h-16 rounded-3xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl relative">
+            <div className="absolute inset-0 bg-cyan-400/20 rounded-3xl blur-md" />
+            <Zap className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] relative z-10" />
           </div>
         </div>
         <h2 className="mt-2 text-center text-3xl font-display font-bold text-white tracking-tight">
           Welcome back
         </h2>
-        <p className="mt-2 text-center text-sm text-blue-200">
+        <p className="mt-2 text-center text-sm text-violet-200">
           Sign in to manage your business.
         </p>
       </div>
@@ -86,7 +87,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-white/20"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 text-blue-200 bg-[#3b4c9b]">Or continue with email</span>
+                <span className="px-2 text-violet-200 bg-[#1e1b4b]">Or continue with email</span>
               </div>
             </div>
             
@@ -103,7 +104,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-blue-300/50 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors sm:text-sm backdrop-blur-sm"
+                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
                   placeholder="admin@valdez.co"
                 />
               </div>
@@ -122,7 +123,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-blue-300/50 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors sm:text-sm backdrop-blur-sm"
+                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
                   placeholder="••••••••"
                 />
               </div>
@@ -132,7 +133,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full justify-center items-center gap-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-3.5 text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/30 hover:scale-[1.02] active:scale-95 shadow-lg shadow-white/5"
+                className="flex w-full justify-center items-center gap-2 rounded-full bg-cyan-500 hover:bg-cyan-400 px-4 py-3.5 text-sm font-semibold text-slate-950 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-cyan-300 hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                 {loading ? 'Signing in...' : 'Sign in'}
@@ -141,9 +142,9 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-6 flex flex-col items-center gap-2">
-            <p className="text-center text-sm text-blue-200">
+            <p className="text-center text-sm text-violet-200">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-white hover:text-blue-100 font-semibold transition-colors underline decoration-white/30 underline-offset-4">
+              <Link href="/signup" className="text-cyan-300 hover:text-cyan-200 font-semibold transition-colors underline decoration-cyan-400/30 underline-offset-4">
                 Sign up
               </Link>
             </p>

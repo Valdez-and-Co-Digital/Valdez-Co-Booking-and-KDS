@@ -133,12 +133,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Brand */}
       <div className="px-4 py-5 border-b border-white/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,211,238,0.3)]">
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
             <p className="font-display font-semibold text-sm gradient-text">SwiftKDS</p>
-            <p className="text-xs text-zinc-500 truncate max-w-[140px]">{tenantName || 'Loading...'}</p>
+            <p className="text-xs text-slate-400 truncate max-w-[140px]">{tenantName || 'Loading...'}</p>
           </div>
         </div>
       </div>
@@ -192,10 +192,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Mobile top bar: just the logo/title */}
         <header className="md:hidden flex items-center justify-between px-4 py-3 glass-card rounded-none border-x-0 border-t-0">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-violet-400" />
+            <Zap className="w-4 h-4 text-cyan-400" />
             <span className="font-display font-semibold text-sm gradient-text">SwiftKDS</span>
           </div>
-          <span className="text-xs text-zinc-500 truncate max-w-[140px]">{tenantName}</span>
+          <span className="text-xs text-slate-400 truncate max-w-[140px]">{tenantName}</span>
         </header>
 
         {/* Page content — pb-20 on mobile to clear the bottom nav */}
@@ -204,8 +204,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           onClick={() => initAudio()}
         >
           {impersonatedTenantId && (
-            <div className="mb-4 p-3 bg-violet-600/20 border border-violet-500/50 rounded-xl flex items-center justify-between">
-              <span className="text-violet-300 text-sm font-medium">
+            <div className="mb-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-between backdrop-blur-md">
+              <span className="text-cyan-300 text-sm font-medium">
                 God Mode Active: Viewing as {tenantName}
               </span>
               <button
@@ -213,7 +213,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   setImpersonatedTenantId(null);
                   window.location.href = '/dashboard';
                 }}
-                className="text-xs bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"
               >
                 Exit
               </button>
@@ -224,7 +224,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* ── Mobile Bottom Navigation Bar (hidden on desktop) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_24px_rgba(0,0,0,0.5)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_24px_rgba(0,0,0,0.5)]">
         <div className="flex justify-around items-center px-2 py-2 pb-safe">
           {bottomNavItems.map(({ href, icon: Icon, shortLabel }) => {
             const isActive = pathname === href;
@@ -237,22 +237,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               >
                 <div className={`relative flex items-center justify-center w-10 h-8 rounded-xl transition-all ${
                   isActive
-                    ? 'bg-violet-600/20'
+                    ? 'bg-cyan-500/15'
                     : ''
                 }`}>
                   <Icon
                     className={`w-5 h-5 transition-colors ${
-                      isActive ? 'text-violet-400' : 'text-zinc-500'
+                      isActive ? 'text-cyan-400' : 'text-slate-500'
                     }`}
                     strokeWidth={isActive ? 2.5 : 1.75}
                   />
                   {/* Active dot indicator */}
                   {isActive && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-violet-400" />
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   )}
                 </div>
                 <span className={`text-[10px] font-medium transition-colors ${
-                  isActive ? 'text-violet-400' : 'text-zinc-500'
+                  isActive ? 'text-cyan-400' : 'text-slate-500'
                 }`}>
                   {shortLabel}
                 </span>
@@ -267,19 +267,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             <div className={`flex items-center justify-center w-10 h-8 rounded-xl transition-all ${
               pathname === profileItem.href && !bottomNavItems.find(i => i.href === profileItem.href)
-                ? 'bg-violet-600/20'
+                ? 'bg-cyan-500/15'
                 : ''
             }`}>
               <UserCircle2
                 className={`w-5 h-5 ${
                   !bottomNavItems.find(i => i.href === profileItem.href) && pathname === profileItem.href
-                    ? 'text-violet-400'
-                    : 'text-zinc-500'
+                    ? 'text-cyan-400'
+                    : 'text-slate-500'
                 }`}
                 strokeWidth={1.75}
               />
             </div>
-            <span className="text-[10px] font-medium text-zinc-500">Profile</span>
+            <span className="text-[10px] font-medium text-slate-500">Profile</span>
           </Link>
         </div>
       </nav>

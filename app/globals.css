@@ -76,32 +76,33 @@
    ============================================================ */
 
 :root {
-  /* Brand Colors */
-  --brand-primary: #7c3aed;
-  --brand-primary-light: #9333ea;
-  --brand-primary-dark: #6d28d9;
+  /* Brand Colors - Midnight Violet Theme */
+  --brand-primary: #06b6d4;      /* Cyan 500 */
+  --brand-primary-light: #22d3ee; /* Cyan 400 */
+  --brand-primary-dark: #0891b2;  /* Cyan 600 */
+  --brand-accent: #8b5cf6;       /* Violet 500 */
 
   /* Semantic Colors */
-  --background: #0f0f11;
-  --foreground: #f4f4f5;
-  --card: #18181b;
-  --card-hover: #27272a;
-  --card-border: rgba(255, 255, 255, 0.1);
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
+  --background: #020617; /* Slate 950 */
+  --foreground: #f8fafc; /* Slate 50 */
+  --card: rgba(2, 6, 23, 0.4);
+  --card-hover: rgba(30, 41, 59, 0.5);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(30, 41, 59, 0.8);
+  --muted-foreground: #94a3b8; /* Slate 400 */
 
   /* KDS Status Colors */
   --status-pending: #f59e0b;
   --status-confirmed: #3b82f6;
-  --status-in-progress: #7c3aed;
+  --status-in-progress: #8b5cf6;
   --status-ready: #10b981;
-  --status-completed: #71717a;
+  --status-completed: #64748b;
   --status-cancelled: #ef4444;
 
   /* Glass effect */
   --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 12px;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 24px;
 
   /* Typography */
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -142,17 +143,19 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: 0.75rem;
-  transition: border-color 250ms ease, background 250ms ease;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: border-color 250ms ease, background 250ms ease, transform 250ms ease, box-shadow 250ms ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  background: linear-gradient(135deg, var(--brand-primary-light), var(--brand-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -160,18 +163,22 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-glow {
   position: relative;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.35), 0 0 60px rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.35), 0 0 60px rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px; /* pill shape */
+  font-weight: 600;
+  color: white;
   transition: box-shadow 250ms ease, transform 150ms ease;
 }
 
 .btn-glow:hover {
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.5), 0 0 80px rgba(124, 58, 237, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), 0 0 80px rgba(6, 182, 212, 0.25);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .btn-glow:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .status-badge {
@@ -198,7 +205,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: 0.75rem;
+  border-radius: 1.25rem;
   padding: 1rem;
   cursor: pointer;
   user-select: none;
@@ -207,7 +214,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .kds-ticket:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .countdown-normal  { color: #34d399; }
@@ -219,7 +227,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: 0.75rem;
+  border-radius: 1.25rem;
   padding: 1rem;
   cursor: pointer;
   transition: all 250ms ease;
@@ -227,13 +235,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .service-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(6, 182, 212, 0.3);
 }
 
 .service-card.selected {
-  border-color: rgba(124, 58, 237, 0.6);
-  background: rgba(124, 58, 237, 0.08);
-  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.4), 0 0 20px rgba(124, 58, 237, 0.15);
+  border-color: rgba(6, 182, 212, 0.6);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.15);
 }
 
 .nav-item {
@@ -241,22 +249,23 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #a1a1aa;
+  color: #94a3b8; /* slate 400 */
   transition: all 150ms ease;
 }
 
 .nav-item:hover {
   background: rgba(255,255,255,0.06);
-  color: #f4f4f5;
+  color: #f8fafc;
 }
 
 .nav-item.active {
-  background: rgba(124, 58, 237, 0.15);
-  color: #c084fc;
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: rgba(6, 182, 212, 0.15);
+  color: #22d3ee; /* cyan 400 */
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -288,10 +297,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .bg-mesh {
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    #0f0f11;
+    radial-gradient(ellipse at top left, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+    linear-gradient(to bottom, #020617, #1e1b4b, #020617);
 }
 
 .payment-idle       { background: #18181b; border-color: #27272a; }
