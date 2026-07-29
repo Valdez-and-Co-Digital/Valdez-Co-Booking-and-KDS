@@ -35,7 +35,6 @@ export default function LoginPage() {
   };
 
   return (
-  return (
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-slate-950 to-violet-950 flex flex-col justify-center p-4 sm:p-6 lg:p-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md animate-slide-up">
         <div className="flex justify-center mb-4">
