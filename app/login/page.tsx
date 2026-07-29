@@ -34,6 +34,21 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-slate-950 to-violet-950 flex flex-col justify-center p-4 sm:p-6 lg:p-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md animate-slide-up">
@@ -73,8 +88,9 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={() => alert('Sign in with Google coming soon!')}
-              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z"/>

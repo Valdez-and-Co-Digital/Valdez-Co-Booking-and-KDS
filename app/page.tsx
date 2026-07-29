@@ -53,6 +53,21 @@ export default function LandingPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#020617] text-white overflow-x-hidden">
       {/* Background orbs */}
@@ -280,8 +295,9 @@ export default function LandingPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => alert('Google sign-in coming soon!')}
-                  className="w-full flex items-center justify-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition-transform"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 48 48">
                     <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z"/>
