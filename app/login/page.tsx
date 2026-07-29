@@ -35,24 +35,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-violet-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  return (
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-slate-950 to-violet-950 flex flex-col justify-center p-4 sm:p-6 lg:p-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md animate-slide-up">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl relative">
+        <div className="flex justify-center mb-4">
+          <div className="w-14 h-14 rounded-3xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl relative">
             <div className="absolute inset-0 bg-cyan-400/20 rounded-3xl blur-md" />
-            <Zap className="w-8 h-8 text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] relative z-10" />
+            <Zap className="w-7 h-7 text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] relative z-10" />
           </div>
         </div>
-        <h2 className="mt-2 text-center text-3xl font-display font-bold text-white tracking-tight">
+        <h2 className="text-center text-2xl font-display font-bold text-white tracking-tight">
           Welcome back
         </h2>
-        <p className="mt-2 text-center text-sm text-violet-200">
+        <p className="mt-1 text-center text-sm text-violet-200">
           Sign in to manage your business.
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <div className="backdrop-blur-xl bg-white/5 rounded-3xl py-8 px-4 sm:px-10 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in flex-1 max-h-full overflow-y-auto" style={{ animationDelay: '100ms' }}>
+        <div className="backdrop-blur-xl bg-white/5 rounded-3xl py-6 px-4 sm:px-10 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
           <form className="space-y-5" onSubmit={handleLogin}>
             {error && (
               <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-100 text-sm backdrop-blur-md">
@@ -63,7 +64,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => alert('Sign in with Apple coming soon!')}
-              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3.5 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95"
+              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.641-.026 2.669-1.48 3.666-2.947 1.15-1.688 1.624-3.324 1.65-3.411-.037-.015-3.195-1.226-3.23-4.88-.035-3.056 2.493-4.52 2.613-4.593-1.425-2.083-3.633-2.366-4.42-2.433-2.003-.178-4.045 1.106-5.02 1.106zM15.485 4.314c.834-1.012 1.396-2.418 1.242-3.814-1.192.048-2.673.794-3.535 1.83-.773.92-1.442 2.362-1.26 3.731 1.332.103 2.723-.733 3.553-1.747z"/>
@@ -74,7 +75,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => alert('Sign in with Google coming soon!')}
-              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3.5 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95"
+              className="w-full flex justify-center items-center gap-3 rounded-full bg-white text-black px-4 py-3 text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-95"
             >
               <svg className="w-5 h-5" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z"/>
@@ -107,7 +108,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
+                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
                   placeholder="admin@valdez.co"
                 />
               </div>
@@ -126,7 +127,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
+                  className="block w-full appearance-none rounded-2xl border border-white/20 bg-white/10 px-4 py-3 placeholder-violet-300/50 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors sm:text-sm backdrop-blur-sm"
                   placeholder="••••••••"
                 />
               </div>
@@ -136,7 +137,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full justify-center items-center gap-2 rounded-full bg-cyan-500 hover:bg-cyan-400 px-4 py-3.5 text-sm font-semibold text-slate-950 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-cyan-300 hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                className="flex w-full justify-center items-center gap-2 rounded-full bg-cyan-500 hover:bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-cyan-300 hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                 {loading ? 'Signing in...' : 'Sign in'}
