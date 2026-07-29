@@ -38,6 +38,23 @@ export async function getAgencyBillingDefaults() {
   };
 }
 
+export async function getGlobalBillingDefaults() {
+  const adminSupabase = createAdminClient();
+  const { data } = await adminSupabase
+    .from('tenants')
+    .select('settings')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single();
+
+  const billing = data?.settings?.agency_billing || {};
+  return {
+    web_only: parseInt(billing.web_only_price || '99') * 100,
+    web_and_kds: parseInt(billing.web_and_kds_price || '199') * 100,
+    platform_fee: parseFloat(billing.platform_fee || '1'),
+  };
+}
+
 // ── CLIENTS ──────────────────────────────────────────────────────────────────
 
 export async function createClient(formData: FormData) {
