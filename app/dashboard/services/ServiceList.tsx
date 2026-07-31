@@ -69,6 +69,13 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
 
   return (
     <div className="space-y-4">
+      {/* Reusable datalist for categories */}
+      <datalist id="category-list">
+        {allCategories.map(cat => (
+          <option key={cat} value={cat} />
+        ))}
+      </datalist>
+
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
@@ -124,7 +131,7 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
             <div className="grid grid-cols-2 gap-3">
               <div><label className={labelCls}>Name</label><input name="name" required className={inputCls} placeholder={isSalon ? "Women's Cut" : "Spicy Taco"} /></div>
               <div><label className={labelCls}>Price (USD)</label><input name="price" type="number" step="0.01" min="0" required className={inputCls} placeholder="25.00" /></div>
-              <div><label className={labelCls}>Category</label><input name="category" required defaultValue={activeCategory} className={inputCls} /></div>
+              <div><label className={labelCls}>Category</label><input name="category" list="category-list" required defaultValue={activeCategory} className={inputCls} placeholder="e.g. Milk Teas" /></div>
               <div><label className={labelCls}>{isSalon ? 'Duration (min)' : 'Prep time (min)'}</label><input name="timeValue" type="number" min="1" required className={inputCls} placeholder="10" /></div>
             </div>
             <div><label className={labelCls}>Description</label><textarea name="description" className={`${inputCls} h-14 resize-none`} /></div>
@@ -154,7 +161,7 @@ export function ServiceList({ initialServices, isSalon }: { initialServices: any
                 <div className="grid grid-cols-2 gap-3">
                   <div><label className={labelCls}>Name</label><input name="name" required defaultValue={service.name} className={inputCls} /></div>
                   <div><label className={labelCls}>Price (USD)</label><input name="price" type="number" step="0.01" min="0" required defaultValue={(service.price_cents / 100).toFixed(2)} className={inputCls} /></div>
-                  <div><label className={labelCls}>Category</label><input name="category" required defaultValue={service.category || 'General'} className={inputCls} /></div>
+                  <div><label className={labelCls}>Category</label><input name="category" list="category-list" required defaultValue={service.category || 'General'} className={inputCls} placeholder="e.g. Milk Teas" /></div>
                   <div><label className={labelCls}>{isSalon ? 'Duration (min)' : 'Prep time (min)'}</label><input name="timeValue" type="number" min="1" required defaultValue={isSalon ? service.duration_minutes : service.prep_time_minutes} className={inputCls} /></div>
                 </div>
                 <div><label className={labelCls}>Description</label><textarea name="description" defaultValue={service.description || ''} className={`${inputCls} h-14 resize-none`} /></div>
