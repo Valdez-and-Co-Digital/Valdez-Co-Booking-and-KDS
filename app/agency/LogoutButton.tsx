@@ -8,7 +8,7 @@ export function LogoutButton() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   return (

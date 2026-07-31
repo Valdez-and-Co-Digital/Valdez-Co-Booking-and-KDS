@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Settings, Save, Loader2, Clock, CheckSquare } from 'lucide-react';
+import { useImpersonation } from '@/providers/ImpersonationProvider';
 
 export default function SettingsPage() {
   const supabase = createBrowserClient();
@@ -26,38 +27,55 @@ export default function SettingsPage() {
   const [webAndKdsPrice, setWebAndKdsPrice] = useState('199');
   const [platformFee, setPlatformFee] = useState('1');
 
+  const { impersonatedTenantId } = useImpersonation();
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
-      supabase
-        .from('admin_users')
-        .select('tenants(*)')
-        .eq('user_id', session.user.id)
-        .single()
-        .then(({ data }) => {
-          const t = data?.tenants as any;
-          if (t) {
-            setTenant(t);
-            setWarningMins(t.settings?.kds_warning_mins ?? 15);
-            setOverdueMins(t.settings?.kds_overdue_mins ?? 30);
-            setEnableReservations(!!t.settings?.enable_reservations);
-            setEnableCatering(!!t.settings?.enable_catering);
-            setRequireOrderConfirmation(!!t.settings?.require_order_confirmation);
-            setTaxRate(t.settings?.tax_rate ?? 0);
-            setTaxInclusive(!!t.settings?.tax_inclusive);
-            setPromoCodes(t.settings?.promo_codes || []);
-            setIsAgency(!t.settings?.is_foodtruck && !t.settings?.is_restaurant && !t.settings?.is_salon);
-            
-            if (t.settings?.agency_billing) {
-              setWebOnlyPrice(t.settings.agency_billing.web_only_price || '99');
-              setWebAndKdsPrice(t.settings.agency_billing.web_and_kds_price || '199');
-              setPlatformFee(t.settings.agency_billing.platform_fee || '1');
-            }
+      
+      const processTenantData = (t: any) => {
+        if (t) {
+          setTenant(t);
+          setWarningMins(t.settings?.kds_warning_mins ?? 15);
+          setOverdueMins(t.settings?.kds_overdue_mins ?? 30);
+          setEnableReservations(!!t.settings?.enable_reservations);
+          setEnableCatering(!!t.settings?.enable_catering);
+          setRequireOrderConfirmation(!!t.settings?.require_order_confirmation);
+          setTaxRate(t.settings?.tax_rate ?? 0);
+          setTaxInclusive(!!t.settings?.tax_inclusive);
+          setPromoCodes(t.settings?.promo_codes || []);
+          setIsAgency(!t.settings?.is_foodtruck && !t.settings?.is_restaurant && !t.settings?.is_salon);
+          
+          if (t.settings?.agency_billing) {
+            setWebOnlyPrice(t.settings.agency_billing.web_only_price || '99');
+            setWebAndKdsPrice(t.settings.agency_billing.web_and_kds_price || '199');
+            setPlatformFee(t.settings.agency_billing.platform_fee || '1');
           }
-          setLoading(false);
-        });
+        }
+        setLoading(false);
+      };
+
+      if (impersonatedTenantId) {
+        supabase
+          .from('tenants')
+          .select('*')
+          .eq('id', impersonatedTenantId)
+          .single()
+          .then(({ data }) => {
+            processTenantData(data);
+          });
+      } else {
+        supabase
+          .from('admin_users')
+          .select('tenants(*)')
+          .eq('user_id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            processTenantData(data?.tenants);
+          });
+      }
     });
-  }, [supabase]);
+  }, [supabase, impersonatedTenantId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -357,7 +375,7 @@ export default function SettingsPage() {
               type="button"
               onClick={async () => {
                 await supabase.auth.signOut();
-                window.location.href = '/login';
+                window.location.href = '/';
               }}
               className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-3 rounded-xl font-semibold transition-colors"
             >
