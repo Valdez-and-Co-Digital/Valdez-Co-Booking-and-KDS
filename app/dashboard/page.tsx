@@ -8,9 +8,9 @@ import AgencyOverview from '@/components/admin/AgencyOverview';
 export default async function DashboardOverviewPage() {
   const supabase = await createServerClient();
   const adminSupabase = createAdminClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user || authError) {
     redirect('/login');
   }
 
@@ -34,7 +34,7 @@ export default async function DashboardOverviewPage() {
     const { data: adminUser } = await adminSupabase
       .from('admin_users')
       .select('tenant:tenants(id, name, settings, business_hours)')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single();
 
     tenant = adminUser?.tenant;
