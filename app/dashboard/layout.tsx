@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Zap, Users, LogOut, FileText, Calendar,
-  Settings, UtensilsCrossed, UserCircle2, Bell, TrendingUp, ShieldAlert
+  Settings, UtensilsCrossed, UserCircle2, Bell, TrendingUp, ShieldAlert,
+  Workflow
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -74,7 +75,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   } else if (tenantType === 'agency') {
     navItems = [
       { href: '/dashboard',           icon: LayoutDashboard, label: 'Agency Overview',    shortLabel: 'Home' },
-      { href: '/dashboard/clients',   icon: Users,           label: 'Clients',             shortLabel: 'Clients' },
+      { href: '/dashboard/onboarding',icon: Workflow,        label: 'Pipeline',            shortLabel: 'Pipeline' },
       { href: '/dashboard/invoices',  icon: FileText,        label: 'Invoices & Billing',  shortLabel: 'Invoices' },
       { href: '/dashboard/team',      icon: Users,           label: 'Team Management',     shortLabel: 'Team' },
       { href: '/dashboard/settings',  icon: Settings,        label: 'Settings',            shortLabel: 'Settings' },
