@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/navigation';
+import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 export async function GET(request: Request) {

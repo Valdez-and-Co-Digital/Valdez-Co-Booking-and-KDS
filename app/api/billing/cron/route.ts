@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/navigation';
+import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   // Validate authorization header for Vercel Cron
