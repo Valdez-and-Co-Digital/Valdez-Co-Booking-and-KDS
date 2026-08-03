@@ -76,9 +76,6 @@ export default function AgencyOverview() {
           </h1>
           <p className="text-zinc-400 text-sm mt-1">Oversee system-wide tenants, revenue throughput, and direct impersonation tools.</p>
         </div>
-        <button className="hidden md:flex bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl font-semibold items-center gap-2 transition-colors text-sm">
-          + Provision New Tenant
-        </button>
       </div>
 
       {/* ── Top Metrics Grid (OmniTruck Style) ── */}

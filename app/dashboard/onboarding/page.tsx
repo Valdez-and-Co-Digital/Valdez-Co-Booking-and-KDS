@@ -93,14 +93,11 @@ export default function OnboardingPipelinePage() {
           <Link
             href="/onboarding/intake"
             target="_blank"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-medium shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all"
           >
-            <span>View Public Intake</span>
-          </Link>
-          <button className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-medium shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all">
             <Plus className="w-4 h-4" />
             Add Prospect
-          </button>
+          </Link>
         </div>
       </div>
 

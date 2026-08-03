@@ -7,6 +7,7 @@ import { Zap, CheckCircle2, Building, User, Mail, Phone, ArrowRight } from 'luci
 export default function ProspectIntakePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [posSystem, setPosSystem] = useState('');
   const supabase = createBrowserClient();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,7 +23,7 @@ export default function ProspectIntakePage() {
       source: 'inbound_inquiry',
       status: 'new',
       intake_data: {
-        pos_system: formData.get('pos_system') as string,
+        pos_system: posSystem === 'Other' ? formData.get('pos_system_other') as string : posSystem,
         pain_points: formData.get('pain_points') as string,
       }
     };
@@ -129,8 +130,28 @@ export default function ProspectIntakePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Current POS / Setup</label>
-              <input name="pos_system" type="text" className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder:text-slate-600" placeholder="Square, Toast, Pen & Paper..." />
+              <select 
+                value={posSystem}
+                onChange={(e) => setPosSystem(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all appearance-none"
+              >
+                <option value="" disabled className="bg-slate-900">Select your current setup...</option>
+                <option value="Square" className="bg-slate-900">Square</option>
+                <option value="Toast" className="bg-slate-900">Toast</option>
+                <option value="Clover" className="bg-slate-900">Clover</option>
+                <option value="Lightspeed" className="bg-slate-900">Lightspeed</option>
+                <option value="TouchBistro" className="bg-slate-900">TouchBistro</option>
+                <option value="Pen & Paper" className="bg-slate-900">Pen & Paper</option>
+                <option value="Other" className="bg-slate-900">Other</option>
+              </select>
             </div>
+
+            {posSystem === 'Other' && (
+              <div className="space-y-2 animate-fade-in">
+                <label className="text-sm font-medium text-slate-300">Please specify</label>
+                <input name="pos_system_other" type="text" className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder:text-slate-600" placeholder="What system are you using?" />
+              </div>
+            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">What's your biggest operational challenge?</label>
