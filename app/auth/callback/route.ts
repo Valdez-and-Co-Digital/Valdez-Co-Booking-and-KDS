@@ -11,13 +11,14 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const isLocalEnv = process.env.NODE_ENV === 'development';
-      const redirectUrl = new URL(next, origin);
+      const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+      const protocol = isLocalEnv ? 'http' : 'https';
       
-      if (!isLocalEnv) {
-        redirectUrl.protocol = 'https:';
+      if (host) {
+        return NextResponse.redirect(`${protocol}://${host}${next}`);
+      } else {
+        return NextResponse.redirect(`${origin}${next}`);
       }
-      
-      return NextResponse.redirect(redirectUrl.toString());
     }
   }
 
