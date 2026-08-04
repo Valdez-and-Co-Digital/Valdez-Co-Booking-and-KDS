@@ -43,15 +43,28 @@ export default async function ClientsPage() {
 
   if (isAgency && !impersonatedTenantId) {
     // Show the agency billing clients page
-    const { data: agencyClients } = await adminSupabase
-      .from('agency_clients')
+    const { data: prospects } = await adminSupabase
+      .from('prospects')
       .select('*')
-      .eq('agency_tenant_id', tenantId!)
       .order('created_at', { ascending: false });
 
     const defaultPrices = await getAgencyBillingDefaults();
 
-    return <ClientsClientPage initialClients={agencyClients || []} defaultPrices={defaultPrices} />;
+    const mappedClients = (prospects || []).map(p => ({
+      id: p.id,
+      name: p.contact_name,
+      business_name: p.business_name,
+      email: p.contact_email,
+      phone: p.contact_phone || null,
+      service_tier: p.tier_selected || 'digital_foundation',
+      custom_price_cents: p.invoice_amount || null,
+      platform_fee_percent: null,
+      status: p.status === 'converted' ? 'active' : (p.status === 'lost' ? 'inactive' : 'prospect'),
+      notes: null,
+      created_at: p.created_at,
+    }));
+
+    return <ClientsClientPage initialClients={mappedClients} defaultPrices={defaultPrices} />;
   }
 
   // Non-agency: render the existing salon/restaurant clients component

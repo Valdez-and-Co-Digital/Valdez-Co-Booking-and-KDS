@@ -32,8 +32,9 @@ export async function getAgencyBillingDefaults() {
 
   const billing = data?.settings?.agency_billing || {};
   return {
-    web_only: parseInt(billing.web_only_price || '99') * 100,
-    web_and_kds: parseInt(billing.web_and_kds_price || '199') * 100,
+    digital_foundation: parseInt(billing.digital_foundation_price || '500') * 100,
+    connected_ordering: parseInt(billing.connected_ordering_price || '1000') * 100,
+    complete_kitchen_suite: parseInt(billing.complete_kitchen_suite_price || '1500') * 100,
     platform_fee: parseFloat(billing.platform_fee || '1'),
   };
 }
@@ -49,8 +50,9 @@ export async function getGlobalBillingDefaults() {
 
   const billing = data?.settings?.agency_billing || {};
   return {
-    web_only: parseInt(billing.web_only_price || '99') * 100,
-    web_and_kds: parseInt(billing.web_and_kds_price || '199') * 100,
+    digital_foundation: parseInt(billing.digital_foundation_price || '500') * 100,
+    connected_ordering: parseInt(billing.connected_ordering_price || '1000') * 100,
+    complete_kitchen_suite: parseInt(billing.complete_kitchen_suite_price || '1500') * 100,
     platform_fee: parseFloat(billing.platform_fee || '1'),
   };
 }
@@ -74,21 +76,18 @@ export async function createClient(formData: FormData) {
     ? Math.round(parseFloat(customPriceRaw) * 100)
     : null;
 
-  const platformFeePercent = platformFeeRaw && platformFeeRaw.trim() !== ''
-    ? parseFloat(platformFeeRaw)
-    : null;
-
-  const { error } = await adminSupabase.from('agency_clients').insert({
-    agency_tenant_id: tenantId,
-    name,
-    business_name: businessName || null,
-    email,
-    phone: phone || null,
-    service_tier: serviceTier,
-    custom_price_cents: customPriceCents,
-    platform_fee_percent: platformFeePercent,
-    notes: notes || null,
-    status: 'prospect',
+  // We map the new form fields to the `prospects` table columns.
+  // Note: prospects doesn't have platform_fee_percent yet in our known schema, but we can store it in notes or ignore it for now, 
+  // or add it if it exists. For now, we'll store custom_price_cents in invoice_amount.
+  const { error } = await adminSupabase.from('prospects').insert({
+    tenant_id: tenantId,
+    contact_name: name,
+    business_name: businessName || name,
+    contact_email: email,
+    contact_phone: phone || null,
+    tier_selected: serviceTier,
+    invoice_amount: customPriceCents,
+    status: 'new', // Default status for new prospects
   });
 
   if (error) throw new Error(error.message);
@@ -98,7 +97,7 @@ export async function createClient(formData: FormData) {
 export async function updateClientStatus(clientId: string, status: string) {
   const adminSupabase = createAdminClient();
   const { error } = await adminSupabase
-    .from('agency_clients')
+    .from('prospects')
     .update({ status })
     .eq('id', clientId);
   if (error) throw new Error(error.message);
@@ -108,7 +107,7 @@ export async function updateClientStatus(clientId: string, status: string) {
 export async function deleteClient(clientId: string) {
   const adminSupabase = createAdminClient();
   const { error } = await adminSupabase
-    .from('agency_clients')
+    .from('prospects')
     .delete()
     .eq('id', clientId);
   if (error) throw new Error(error.message);

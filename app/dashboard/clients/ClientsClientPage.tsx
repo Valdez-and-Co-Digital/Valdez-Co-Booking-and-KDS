@@ -5,15 +5,20 @@ import { createClient, updateClientStatus, deleteClient } from '@/app/actions/bi
 import { Users, Plus, X, Briefcase, Monitor, Layers, MoreVertical, Mail, Phone, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const TIER_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  web_only: {
-    label: 'Web Only',
+  digital_foundation: {
+    label: 'Digital Foundation',
     color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     icon: <Monitor className="w-3 h-3" />,
   },
-  web_and_kds: {
-    label: 'Web + KDS',
+  connected_ordering: {
+    label: 'Connected Ordering',
     color: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     icon: <Layers className="w-3 h-3" />,
+  },
+  complete_kitchen_suite: {
+    label: 'Complete Kitchen Suite',
+    color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    icon: <Briefcase className="w-3 h-3" />,
   },
 };
 
@@ -42,7 +47,7 @@ export default function ClientsClientPage({
   defaultPrices 
 }: { 
   initialClients: Client[],
-  defaultPrices: { web_only: number; web_and_kds: number; platform_fee: number }
+  defaultPrices: { digital_foundation: number; connected_ordering: number; complete_kitchen_suite: number; platform_fee: number }
 }) {
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -52,7 +57,7 @@ export default function ClientsClientPage({
   // Form state
   const [form, setForm] = useState({
     name: '', business_name: '', email: '', phone: '',
-    service_tier: 'web_only', custom_price: '', platform_fee: '', notes: '',
+    service_tier: 'digital_foundation', custom_price: '', platform_fee: '', notes: '',
   });
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -62,7 +67,7 @@ export default function ClientsClientPage({
     startTransition(async () => {
       await createClient(fd);
       setShowAddModal(false);
-      setForm({ name: '', business_name: '', email: '', phone: '', service_tier: 'web_only', custom_price: '', platform_fee: '', notes: '' });
+      setForm({ name: '', business_name: '', email: '', phone: '', service_tier: 'digital_foundation', custom_price: '', platform_fee: '', notes: '' });
       window.location.reload();
     });
   };
@@ -131,7 +136,7 @@ export default function ClientsClientPage({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {clients.map(client => {
-            const tier = TIER_LABELS[client.service_tier] ?? TIER_LABELS.web_only;
+            const tier = TIER_LABELS[client.service_tier] ?? TIER_LABELS.digital_foundation;
             const status = STATUS_CONFIG[client.status] ?? STATUS_CONFIG.prospect;
             const price = client.custom_price_cents
               ? `$${(client.custom_price_cents / 100).toFixed(0)}/mo`

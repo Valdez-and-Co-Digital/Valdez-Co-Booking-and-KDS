@@ -23,8 +23,9 @@ export default function SettingsPage() {
   const [promoCodes, setPromoCodes] = useState<{code: string, discountType: 'percentage' | 'fixed', discountValue: number}[]>([]);
 
   // Agency Billing settings
-  const [webOnlyPrice, setWebOnlyPrice] = useState('99');
-  const [webAndKdsPrice, setWebAndKdsPrice] = useState('199');
+  const [digitalFoundationPrice, setDigitalFoundationPrice] = useState('500');
+  const [connectedOrderingPrice, setConnectedOrderingPrice] = useState('1000');
+  const [completeKitchenSuitePrice, setCompleteKitchenSuitePrice] = useState('1500');
   const [platformFee, setPlatformFee] = useState('1');
 
   const { impersonatedTenantId } = useImpersonation();
@@ -47,8 +48,9 @@ export default function SettingsPage() {
           setIsAgency(!t.settings?.is_foodtruck && !t.settings?.is_restaurant && !t.settings?.is_salon);
           
           if (t.settings?.agency_billing) {
-            setWebOnlyPrice(t.settings.agency_billing.web_only_price || '99');
-            setWebAndKdsPrice(t.settings.agency_billing.web_and_kds_price || '199');
+            setDigitalFoundationPrice(t.settings.agency_billing.digital_foundation_price || '500');
+            setConnectedOrderingPrice(t.settings.agency_billing.connected_ordering_price || '1000');
+            setCompleteKitchenSuitePrice(t.settings.agency_billing.complete_kitchen_suite_price || '1500');
             setPlatformFee(t.settings.agency_billing.platform_fee || '1');
           }
         }
@@ -93,8 +95,9 @@ export default function SettingsPage() {
       tax_inclusive: taxInclusive,
       promo_codes: promoCodes,
       agency_billing: isAgency ? {
-        web_only_price: webOnlyPrice,
-        web_and_kds_price: webAndKdsPrice,
+        digital_foundation_price: digitalFoundationPrice,
+        connected_ordering_price: connectedOrderingPrice,
+        complete_kitchen_suite_price: completeKitchenSuitePrice,
         platform_fee: platformFee,
       } : undefined,
     };
@@ -327,30 +330,41 @@ export default function SettingsPage() {
                   <Settings className="w-5 h-5 text-emerald-400" />
                   Agency Billing Defaults
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-300">Default 'Web Only' Monthly Price</label>
+                    <label className="text-sm font-medium text-zinc-300">Digital Foundation Price</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
                       <input
-                        type="number" min="0" step="1" required value={webOnlyPrice}
-                        onChange={(e) => setWebOnlyPrice(e.target.value)}
+                        type="number" min="0" step="1" required value={digitalFoundationPrice}
+                        onChange={(e) => setDigitalFoundationPrice(e.target.value)}
                         className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pl-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-300">Default 'Web + KDS' Monthly Price</label>
+                    <label className="text-sm font-medium text-zinc-300">Connected Ordering Price</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
                       <input
-                        type="number" min="0" step="1" required value={webAndKdsPrice}
-                        onChange={(e) => setWebAndKdsPrice(e.target.value)}
+                        type="number" min="0" step="1" required value={connectedOrderingPrice}
+                        onChange={(e) => setConnectedOrderingPrice(e.target.value)}
                         className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pl-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2 md:col-span-2 max-w-sm">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-300">Complete Kitchen Suite Price</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                      <input
+                        type="number" min="0" step="1" required value={completeKitchenSuitePrice}
+                        onChange={(e) => setCompleteKitchenSuitePrice(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 pl-8 text-white focus:ring-1 focus:ring-violet-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-3 max-w-sm">
                     <label className="text-sm font-medium text-zinc-300">Global Platform Fee %</label>
                     <div className="relative">
                       <input
