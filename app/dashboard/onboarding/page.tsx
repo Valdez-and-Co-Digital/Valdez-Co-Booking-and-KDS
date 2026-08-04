@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Plus, MoreHorizontal, Calendar, Phone, Mail, ChevronRight } from 'lucide-react';
+import { Plus, MoreHorizontal, Calendar, Phone, Mail, ChevronRight, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 type Prospect = {
@@ -59,7 +59,10 @@ export default function OnboardingPipelinePage() {
   const handleDrop = async (e: React.DragEvent, newStatus: Prospect['status']) => {
     e.preventDefault();
     const id = e.dataTransfer.getData('prospect_id');
-    
+    await handleStatusChange(id, newStatus);
+  };
+
+  const handleStatusChange = async (id: string, newStatus: Prospect['status']) => {
     // Optimistic update
     setProspects(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
 
@@ -71,6 +74,22 @@ export default function OnboardingPipelinePage() {
 
     if (error) {
       console.error('Error updating prospect status:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this prospect?')) return;
+    
+    // Optimistic update
+    setProspects(prev => prev.filter(p => p.id !== id));
+
+    const { error } = await supabase
+      .from('prospects')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting prospect:', error);
     }
   };
 
@@ -143,10 +162,27 @@ export default function OnboardingPipelinePage() {
                       </button>
                     </div>
                     
-                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-400">
+                    <div className="flex items-center justify-between gap-4 mt-1 text-sm text-slate-400">
                       <div className="flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
                         <Calendar className="w-4 h-4 text-cyan-500" />
                         <span className="font-medium">{new Date(prospect.created_at).toLocaleDateString()}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <select 
+                          value={prospect.status}
+                          onChange={(e) => handleStatusChange(prospect.id, e.target.value as Prospect['status'])}
+                          className="md:hidden bg-slate-800 border border-white/10 rounded-md px-2 py-1 text-xs text-white"
+                        >
+                          {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                        </select>
+                        <button 
+                          onClick={() => handleDelete(prospect.id)} 
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                          aria-label="Delete prospect"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>

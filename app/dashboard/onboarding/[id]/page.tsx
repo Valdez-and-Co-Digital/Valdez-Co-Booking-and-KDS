@@ -5,7 +5,7 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, Building, User, Mail, Phone, Calendar, 
-  CreditCard, CheckCircle2, ChevronRight, Edit2, Save, X, Link as LinkIcon
+  CreditCard, CheckCircle2, ChevronRight, Edit2, Save, X, Link as LinkIcon, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -141,6 +141,18 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
     setIsProcessing(false);
   };
 
+  const deleteProspect = async () => {
+    if (!confirm('Are you sure you want to delete this prospect?')) return;
+    setIsProcessing(true);
+    const { error } = await supabase.from('prospects').delete().eq('id', resolvedParams.id);
+    if (!error) {
+      router.push('/dashboard/onboarding');
+    } else {
+      console.error('Error deleting prospect:', error);
+      setIsProcessing(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center items-center h-full"><div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" /></div>;
   if (!prospect) return <div className="p-8 text-white">Prospect not found.</div>;
 
@@ -152,14 +164,14 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
         <ArrowLeft className="w-4 h-4" /> Back to Pipeline
       </Link>
 
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
         {isEditingInfo ? (
           <div className="flex-1 max-w-2xl bg-slate-900/40 p-6 rounded-2xl border border-white/10 space-y-4">
             <div>
               <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Business Name</label>
               <input value={editForm.business_name} onChange={e => setEditForm({...editForm, business_name: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Contact Name</label>
                 <input value={editForm.contact_name} onChange={e => setEditForm({...editForm, contact_name: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
@@ -181,7 +193,7 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
         ) : (
           <div className="group relative pr-12">
             <h1 className="text-4xl font-bold text-white tracking-tight mb-2">{prospect.business_name}</h1>
-            <div className="flex gap-4 text-sm text-slate-400">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-400">
               <span className="flex items-center gap-1"><User className="w-4 h-4" /> {prospect.contact_name}</span>
               <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> {prospect.contact_email}</span>
               {prospect.contact_phone && <span className="flex items-center gap-1"><Phone className="w-4 h-4" /> {prospect.contact_phone}</span>}
@@ -194,16 +206,24 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
           <button 
             onClick={() => updateStatus('converted')}
             disabled={isProcessing}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-medium shadow-[0_0_20px_rgba(16,185,129,0.2)] ml-4"
+            className="flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-medium shadow-[0_0_20px_rgba(16,185,129,0.2)] md:ml-4 w-full md:w-auto mt-4 md:mt-0"
           >
             <CheckCircle2 className="w-4 h-4" /> Convert to Tenant
           </button>
         )}
+
+        <button 
+          onClick={deleteProspect}
+          disabled={isProcessing}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-white/5 hover:border-red-500/30 transition-all md:ml-2 w-full md:w-auto mt-4 md:mt-0"
+        >
+          <Trash2 className="w-4 h-4" /> Delete
+        </button>
       </div>
 
       {/* Progress Stepper */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 backdrop-blur-md">
-        <div className="flex items-center justify-between">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 mb-8 backdrop-blur-md overflow-x-auto pb-6">
+        <div className="flex items-center justify-between min-w-[500px] md:min-w-0">
           {STATUS_STEPS.map((step, index) => {
             const isCompleted = index <= currentStepIndex;
             const isActive = index === currentStepIndex;
@@ -232,8 +252,8 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
-        <div className="col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
           
           {/* Action Center based on Status */}
           <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
