@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { useImpersonation } from '@/providers/ImpersonationProvider';
 import { useRouter } from 'next/navigation';
-import { Loader2, TrendingUp, Zap, Users, ArrowRight, Shield, Download, Filter, Search, Store, Scissors, Briefcase } from 'lucide-react';
+import { Loader2, TrendingUp, Zap, Users, ArrowRight, Shield, Download, Filter, Search, Store, Scissors, Briefcase, Trash2 } from "lucide-react";
 
 export default function AgencyOverview() {
   const [stats, setStats] = useState<any>(null);
@@ -39,6 +39,19 @@ export default function AgencyOverview() {
     }
     loadData();
   }, [supabase]);
+
+  const handleDeleteTenant = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this tenant? This action cannot be undone.")) return;
+    setTenants(prev => prev.filter(t => t.id !== id));
+    const { error } = await supabase
+      .from("tenants")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("Error deleting tenant:", error);
+      alert("Failed to delete tenant.");
+    }
+  };
 
   const handleImpersonate = (tenantId: string) => {
     setImpersonatedTenantId(tenantId);
@@ -217,12 +230,21 @@ export default function AgencyOverview() {
                     ${(t.tpv / 1000).toFixed(1)}k
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleImpersonate(t.id)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-violet-600/20 border border-white/10 hover:border-violet-500/30 text-zinc-300 hover:text-violet-300 rounded-xl text-xs font-semibold transition-all"
-                    >
-                      <ArrowRight className="w-3 h-3" /> Impersonate
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleDeleteTenant(t.id)}
+                        className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors"
+                        aria-label="Delete tenant"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleImpersonate(t.id)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-violet-600/20 border border-white/10 hover:border-violet-500/30 text-zinc-300 hover:text-violet-300 rounded-xl text-xs font-semibold transition-all"
+                      >
+                        <ArrowRight className="w-3 h-3" /> Impersonate
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -251,10 +273,12 @@ export default function AgencyOverview() {
                     </span>
                   </div>
                 </div>
-                <button className="text-zinc-500 p-1">
-                  <div className="w-1 h-1 rounded-full bg-current mb-0.5" />
-                  <div className="w-1 h-1 rounded-full bg-current mb-0.5" />
-                  <div className="w-1 h-1 rounded-full bg-current" />
+                <button
+                  onClick={() => handleDeleteTenant(t.id)}
+                  className="text-zinc-500 hover:text-red-400 hover:bg-red-400/10 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center rounded-xl transition-colors"
+                  aria-label="Delete tenant"
+                >
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
 
