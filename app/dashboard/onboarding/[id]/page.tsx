@@ -246,8 +246,10 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Progress Stepper */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 mb-8 backdrop-blur-md overflow-x-auto pb-6">
-        <div className="flex items-center justify-between min-w-[500px] md:min-w-0">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 mb-8 backdrop-blur-md">
+        
+        {/* Desktop Stepper */}
+        <div className="hidden md:flex items-center justify-between relative">
           {STATUS_STEPS.map((step, index) => {
             const isCompleted = index <= currentStepIndex;
             const isActive = index === currentStepIndex;
@@ -274,6 +276,38 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
             );
           })}
         </div>
+
+        {/* Mobile Stepper */}
+        <div className="flex md:hidden flex-col gap-6">
+          {STATUS_STEPS.map((step, index) => {
+            const isCompleted = index <= currentStepIndex;
+            const isActive = index === currentStepIndex;
+            return (
+              <div key={step.id} className="flex items-center gap-4 relative">
+                {/* Vertical Line Connector */}
+                {index < STATUS_STEPS.length - 1 && (
+                  <div className={`absolute left-[15px] top-[32px] w-[2px] h-[calc(100%+24px)] -z-0
+                    ${index < currentStepIndex ? 'bg-cyan-500' : 'bg-white/10'}
+                  `} />
+                )}
+                
+                <button 
+                  onClick={() => updateStatus(step.id as Prospect['status'])}
+                  disabled={isProcessing}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 z-10 hover:scale-110 transition-transform shrink-0 bg-slate-950 relative
+                  ${isCompleted ? 'bg-cyan-500 border-cyan-500 text-slate-900' : 'border-white/20 text-slate-500'}
+                  ${isActive ? 'shadow-[0_0_15px_rgba(34,211,238,0.5)]' : ''}
+                `}>
+                  {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <span>{index + 1}</span>}
+                </button>
+                <span className={`text-sm font-semibold uppercase tracking-wider ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                  {step.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
