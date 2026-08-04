@@ -75,7 +75,6 @@ export default function ClientsClientPage({
     startTransition(async () => {
       await updateClientStatus(id, status);
       setClients(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-      setActiveMenu(null);
     });
   };
 
@@ -84,7 +83,6 @@ export default function ClientsClientPage({
     startTransition(async () => {
       await deleteClient(id);
       setClients(prev => prev.filter(c => c.id !== id));
-      setActiveMenu(null);
     });
   };
 
