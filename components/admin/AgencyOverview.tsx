@@ -28,8 +28,13 @@ export default function AgencyOverview() {
         .order('created_at', { ascending: false });
 
       if (tenantsData) {
+        // Filter out agency accounts (like Valdez & Co) from the directory
+        const clientsOnly = tenantsData.filter((t: any) => 
+          t.settings?.is_foodtruck || t.settings?.is_restaurant || t.settings?.is_salon
+        );
+
         // Mock order data total for display purposes
-        const enriched = tenantsData.map(t => ({
+        const enriched = clientsOnly.map((t: any) => ({
           ...t,
           tpv: Math.floor(Math.random() * 2000000) + 100000 
         }));
