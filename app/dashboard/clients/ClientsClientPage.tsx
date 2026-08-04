@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createClient, updateClientStatus, deleteClient } from '@/app/actions/billing';
-import { Users, Plus, X, Briefcase, Monitor, Layers, MoreVertical, Mail, Phone, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Users, Plus, X, Briefcase, Monitor, Layers, Mail, Phone, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const TIER_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   digital_foundation: {
@@ -51,7 +51,6 @@ export default function ClientsClientPage({
 }) {
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Form state
@@ -143,8 +142,8 @@ export default function ClientsClientPage({
               : defaultPrice(client.service_tier);
 
             return (
-              <div key={client.id} className={`glass-card p-5 rounded-2xl border-white/5 bg-[#131315]/60 flex flex-col gap-4 relative transition-all ${activeMenu === client.id ? 'z-50 ring-1 ring-white/10' : 'z-10'}`}>
-                {/* Header: Avatar, Name, and Menu */}
+              <div key={client.id} className="glass-card p-5 rounded-2xl border-white/5 bg-[#131315]/60 flex flex-col gap-4 transition-all">
+                {/* Header: Avatar + Name */}
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600/30 to-blue-600/20 border border-violet-500/20 flex items-center justify-center font-display font-bold text-violet-300 text-sm flex-shrink-0">
@@ -154,31 +153,6 @@ export default function ClientsClientPage({
                       <h3 className="font-semibold text-white truncate">{client.business_name || client.name}</h3>
                       <p className="text-xs text-zinc-500 truncate">{client.name}</p>
                     </div>
-                  </div>
-
-                  {/* Menu button */}
-                  <div className="relative flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveMenu(activeMenu === client.id ? null : client.id);
-                      }}
-                      className="p-2 -mr-2 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                    >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                    {activeMenu === client.id && (
-                      <div className="absolute right-0 top-full mt-1 z-[999] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden w-44 text-sm">
-                        <button onClick={() => handleStatusChange(client.id, 'converted')} className="w-full px-4 py-2.5 text-left text-emerald-400 hover:bg-white/5">Mark Active (Converted)</button>
-                        <button onClick={() => handleStatusChange(client.id, 'new')} className="w-full px-4 py-2.5 text-left text-amber-400 hover:bg-white/5">Mark Prospect (New)</button>
-                        <button onClick={() => handleStatusChange(client.id, 'lost')} className="w-full px-4 py-2.5 text-left text-zinc-400 hover:bg-white/5">Mark Inactive (Lost)</button>
-                        <div className="border-t border-white/5" />
-                        <button onClick={() => handleDelete(client.id)} className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-white/5 flex items-center gap-2">
-                          <Trash2 className="w-3.5 h-3.5" /> Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -223,7 +197,31 @@ export default function ClientsClientPage({
                       : `${defaultPrices.platform_fee}% (default)`}
                   </span>
                 </div>
+
+                {/* Action buttons — replaces floating dropdown (mobile Safari safe) */}
+                <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                  <button
+                    onClick={() => handleStatusChange(client.id, 'active')}
+                    className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 transition-colors"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" /> Active
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange(client.id, 'prospect')}
+                    className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Clock className="w-3.5 h-3.5" /> Prospect
+                  </button>
+                  <button
+                    onClick={() => handleDelete(client.id)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+                    aria-label="Delete client"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
+
             );
           })}
         </div>

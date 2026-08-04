@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Search, Plus, MoreVertical, Building2, Mail, Phone, Loader2, Calendar } from 'lucide-react';
+import { Users, Search, Plus, Building2, Mail, Phone, Loader2, Calendar, Trash2 } from 'lucide-react';
 import type { Client } from '@/types/database';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { NewAppointmentForm } from '@/components/calendar/NewAppointmentForm';
@@ -180,7 +180,17 @@ export default function SalonClientsPage() {
                   >
                     <Calendar className="w-3.5 h-3.5" /> Book Appointment
                   </button>
-                  <button className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors rounded-lg hover:bg-white/5"><MoreVertical className="w-5 h-5" /></button>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('Delete this client?')) return;
+                      await supabase.from('clients').delete().eq('id', client.id);
+                      setClients(prev => prev.filter(c => c.id !== client.id));
+                    }}
+                    className="min-h-[44px] min-w-[44px] p-2 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex items-center justify-center"
+                    aria-label="Delete client"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             ))}
