@@ -41,6 +41,17 @@ export async function POST(request: Request) {
 
     const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
     oauth2Client.setCredentials({ refresh_token: refreshToken });
+    
+    // Test auth before proceeding
+    try {
+      await oauth2Client.getAccessToken();
+    } catch (authError) {
+      console.error('Google Auth Error:', authError);
+      return NextResponse.json(
+        { error: 'google_auth_required', message: 'Please Reconnect Google Calendar' },
+        { status: 401 }
+      );
+    }
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
@@ -53,7 +64,7 @@ export async function POST(request: Request) {
     endTime.setHours(11, 0, 0, 0); // 11:00 AM
 
     const event = {
-      summary: `SwiftKDS Consultation: ${prospect.business_name}`,
+      summary: `Discovery Call — ${prospect.business_name}`,
       description: `Discovery call with ${prospect.contact_name}.`,
       start: {
         dateTime: startTime.toISOString(),
@@ -81,14 +92,18 @@ export async function POST(request: Request) {
       requestBody: event,
     });
 
-    const meetingLink = response.data.hangoutLink || '';
+    const meetingLink = response.data.conferenceData?.entryPoints?.find(
+      ep => ep.entryPointType === 'video'
+    )?.uri || response.data.hangoutLink || '';
+    const eventId = response.data.id || '';
     const meetingTime = response.data.start?.dateTime || startTime.toISOString();
 
     // Update prospect in DB
     const { error: updateError } = await supabase
       .from('prospects')
       .update({
-        meeting_id: meetingLink,
+        meeting_id: eventId,
+        meeting_link: meetingLink,
         meeting_time: meetingTime,
       })
       .eq('id', prospectId);

@@ -108,14 +108,22 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
 
   const scheduleMeeting = async () => {
     setIsProcessing(true);
-    // Call our Calendar API (mocked for now)
+    // Call our Calendar API
     const res = await fetch('/api/calendar', {
       method: 'POST',
       body: JSON.stringify({ prospectId: prospect?.id })
     });
     const data = await res.json();
+    if (res.status === 401 && data.error === 'google_auth_required') {
+      alert('Google Calendar connection missing or expired. Please Reconnect Google Calendar.');
+      setIsProcessing(false);
+      return;
+    }
+    
     if (data.success) {
       await updateStatus('meeting_scheduled');
+    } else {
+      alert(data.error || 'Failed to schedule meeting');
     }
     setIsProcessing(false);
   };
@@ -151,6 +159,22 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
       console.error('Error deleting prospect:', error);
       setIsProcessing(false);
     }
+  };
+
+  const checkPaymentStatus = async () => {
+    setIsProcessing(true);
+    const res = await fetch('/api/billing/helcim/check-status', {
+      method: 'POST',
+      body: JSON.stringify({ prospectId: prospect?.id })
+    });
+    const data = await res.json();
+    if (data.paid) {
+      alert('Payment found! Prospect has been converted.');
+      setProspect(prev => prev ? { ...prev, status: 'converted' } : null);
+    } else {
+      alert(data.error || 'Invoice not paid yet.');
+    }
+    setIsProcessing(false);
   };
 
   if (isLoading) return <div className="flex justify-center items-center h-full"><div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" /></div>;
@@ -289,7 +313,7 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
             {prospect.status === 'meeting_held' && (
               <div className="space-y-4">
                 <p className="text-slate-400">Select a tier to prepare for conversion.</p>
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   {['digital_foundation', 'connected_ordering', 'complete_kitchen_suite'].map(tier => (
                     <button 
                       key={tier}
@@ -304,6 +328,27 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
                     </button>
                   ))}
                 </div>
+                {prospect.tier_selected && (
+                  <div className="pt-2 flex flex-col md:flex-row gap-4">
+                    <button 
+                      onClick={() => {
+                        const payUrl = `${window.location.origin}/pay/${prospect.id}`;
+                        navigator.clipboard.writeText(payUrl);
+                        alert('Pay link copied to clipboard!');
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl transition-colors text-sm font-semibold"
+                    >
+                      <LinkIcon className="w-4 h-4" /> Copy Pay Link
+                    </button>
+                    <button 
+                      onClick={checkPaymentStatus}
+                      disabled={isProcessing}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl transition-colors text-sm font-bold shadow-[0_0_20px_rgba(34,211,238,0.3)] disabled:opacity-50"
+                    >
+                       Check Payment Status
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
