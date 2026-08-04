@@ -143,9 +143,9 @@ export default function ClientsClientPage({
               : defaultPrice(client.service_tier);
 
             return (
-              <div key={client.id} className="glass-card p-5 rounded-2xl border-white/5 bg-[#131315]/60 flex flex-col gap-4 relative">
+              <div key={client.id} className={`glass-card p-5 rounded-2xl border-white/5 bg-[#131315]/60 flex flex-col gap-4 relative transition-all ${activeMenu === client.id ? 'z-50 ring-1 ring-white/10' : 'z-10'}`}>
                 {/* Menu button */}
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 z-50">
                   <button
                     onClick={() => setActiveMenu(activeMenu === client.id ? null : client.id)}
                     className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 rounded-lg transition-colors"
@@ -154,9 +154,9 @@ export default function ClientsClientPage({
                   </button>
                   {activeMenu === client.id && (
                     <div className="absolute right-0 top-8 z-20 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden w-44 text-sm">
-                      <button onClick={() => handleStatusChange(client.id, 'active')} className="w-full px-4 py-2.5 text-left text-emerald-400 hover:bg-white/5">Mark Active</button>
-                      <button onClick={() => handleStatusChange(client.id, 'prospect')} className="w-full px-4 py-2.5 text-left text-amber-400 hover:bg-white/5">Mark Prospect</button>
-                      <button onClick={() => handleStatusChange(client.id, 'inactive')} className="w-full px-4 py-2.5 text-left text-zinc-400 hover:bg-white/5">Mark Inactive</button>
+                      <button onClick={() => handleStatusChange(client.id, 'converted')} className="w-full px-4 py-2.5 text-left text-emerald-400 hover:bg-white/5">Mark Active (Converted)</button>
+                      <button onClick={() => handleStatusChange(client.id, 'new')} className="w-full px-4 py-2.5 text-left text-amber-400 hover:bg-white/5">Mark Prospect (New)</button>
+                      <button onClick={() => handleStatusChange(client.id, 'lost')} className="w-full px-4 py-2.5 text-left text-zinc-400 hover:bg-white/5">Mark Inactive (Lost)</button>
                       <div className="border-t border-white/5" />
                       <button onClick={() => handleDelete(client.id)} className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-white/5 flex items-center gap-2">
                         <Trash2 className="w-3.5 h-3.5" /> Delete
