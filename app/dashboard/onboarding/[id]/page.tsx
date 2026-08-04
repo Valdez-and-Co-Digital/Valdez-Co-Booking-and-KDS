@@ -5,7 +5,7 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, Building, User, Mail, Phone, Calendar, 
-  CreditCard, CheckCircle2, ChevronRight 
+  CreditCard, CheckCircle2, ChevronRight, Edit2, Save, X, Link as LinkIcon
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,6 +40,10 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
   const [newNote, setNewNote] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [editForm, setEditForm] = useState({
+    business_name: '', contact_name: '', contact_email: '', contact_phone: ''
+  });
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -56,6 +60,28 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
     }
     loadData();
   }, [resolvedParams.id, supabase]);
+
+  const handleEditInfoStart = () => {
+    if (!prospect) return;
+    setEditForm({
+      business_name: prospect.business_name,
+      contact_name: prospect.contact_name,
+      contact_email: prospect.contact_email,
+      contact_phone: prospect.contact_phone || ''
+    });
+    setIsEditingInfo(true);
+  };
+
+  const saveInfoEdits = async () => {
+    if (!prospect) return;
+    setIsProcessing(true);
+    const { error } = await supabase.from('prospects').update(editForm).eq('id', prospect.id);
+    if (!error) {
+      setProspect({ ...prospect, ...editForm });
+      setIsEditingInfo(false);
+    }
+    setIsProcessing(false);
+  };
 
   const updateStatus = async (newStatus: Prospect['status']) => {
     setIsProcessing(true);
@@ -126,20 +152,49 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
         <ArrowLeft className="w-4 h-4" /> Back to Pipeline
       </Link>
 
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-white tracking-tight mb-2">{prospect.business_name}</h1>
-          <div className="flex gap-4 text-sm text-slate-400">
-            <span className="flex items-center gap-1"><User className="w-4 h-4" /> {prospect.contact_name}</span>
-            <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> {prospect.contact_email}</span>
-            {prospect.contact_phone && <span className="flex items-center gap-1"><Phone className="w-4 h-4" /> {prospect.contact_phone}</span>}
+      <div className="flex items-start justify-between mb-8">
+        {isEditingInfo ? (
+          <div className="flex-1 max-w-2xl bg-slate-900/40 p-6 rounded-2xl border border-white/10 space-y-4">
+            <div>
+              <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Business Name</label>
+              <input value={editForm.business_name} onChange={e => setEditForm({...editForm, business_name: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Contact Name</label>
+                <input value={editForm.contact_name} onChange={e => setEditForm({...editForm, contact_name: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Contact Email</label>
+                <input value={editForm.contact_email} onChange={e => setEditForm({...editForm, contact_email: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">Contact Phone</label>
+              <input value={editForm.contact_phone} onChange={e => setEditForm({...editForm, contact_phone: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white" />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => setIsEditingInfo(false)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button onClick={saveInfoEdits} disabled={isProcessing} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-xl transition-colors"><Save className="w-4 h-4" /> Save Changes</button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="group relative pr-12">
+            <h1 className="text-4xl font-bold text-white tracking-tight mb-2">{prospect.business_name}</h1>
+            <div className="flex gap-4 text-sm text-slate-400">
+              <span className="flex items-center gap-1"><User className="w-4 h-4" /> {prospect.contact_name}</span>
+              <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> {prospect.contact_email}</span>
+              {prospect.contact_phone && <span className="flex items-center gap-1"><Phone className="w-4 h-4" /> {prospect.contact_phone}</span>}
+            </div>
+            <button onClick={handleEditInfoStart} className="absolute right-0 top-2 opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-cyan-400 transition-all bg-white/5 rounded-lg border border-white/10"><Edit2 className="w-4 h-4" /></button>
+          </div>
+        )}
+        
         {prospect.status !== 'converted' && (
           <button 
             onClick={() => updateStatus('converted')}
             disabled={isProcessing}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-medium shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-medium shadow-[0_0_20px_rgba(16,185,129,0.2)] ml-4"
           >
             <CheckCircle2 className="w-4 h-4" /> Convert to Tenant
           </button>
@@ -154,12 +209,15 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
             const isActive = index === currentStepIndex;
             return (
               <div key={step.id} className="flex flex-col items-center gap-2 relative flex-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 z-10 
+                <button 
+                  onClick={() => updateStatus(step.id as Prospect['status'])}
+                  disabled={isProcessing}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 z-10 hover:scale-110 transition-transform cursor-pointer
                   ${isCompleted ? 'bg-cyan-500 border-cyan-500 text-slate-900' : 'bg-slate-900 border-white/20 text-slate-500'}
                   ${isActive ? 'shadow-[0_0_15px_rgba(34,211,238,0.5)]' : ''}
                 `}>
                   {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <span>{index + 1}</span>}
-                </div>
+                </button>
                 <span className={`text-xs font-semibold uppercase tracking-wider ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
                   {step.label}
                 </span>
@@ -210,7 +268,7 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
 
             {prospect.status === 'meeting_held' && (
               <div className="space-y-4">
-                <p className="text-slate-400">Select a tier and setup billing.</p>
+                <p className="text-slate-400">Select a tier to prepare for conversion.</p>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   {['digital_foundation', 'connected_ordering', 'complete_kitchen_suite'].map(tier => (
                     <button 
@@ -226,15 +284,50 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
                     </button>
                   ))}
                 </div>
-                {prospect.tier_selected && !prospect.helcim_customer_id && (
-                  <button onClick={setupBilling} disabled={isProcessing} className="flex items-center gap-2 px-4 py-2 bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 rounded-lg transition-colors border border-violet-500/30">
-                    <CreditCard className="w-4 h-4" /> Setup Helcim Billing
-                  </button>
-                )}
-                {prospect.helcim_customer_id && (
-                  <div className="text-emerald-400 text-sm flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Billing Profile Created (ID: {prospect.helcim_customer_id})
-                  </div>
+              </div>
+            )}
+
+            {prospect.status === 'converted' && (
+              <div className="space-y-4 animate-fade-in">
+                {prospect.tier_selected === 'complete_kitchen_suite' ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-emerald-400 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" /> Ready for Tenant Provisioning
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      This prospect has been converted to the Complete Kitchen Suite tier. They need to connect their payment processor and accounting software to finalize provisioning.
+                    </p>
+                    <div className="flex gap-4 pt-2">
+                      <button 
+                        onClick={() => {
+                          const setupUrl = `${window.location.origin}/onboarding/setup/${prospect.id}`;
+                          navigator.clipboard.writeText(setupUrl);
+                          alert('Setup link copied to clipboard!');
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl transition-colors text-sm font-semibold"
+                      >
+                        <LinkIcon className="w-4 h-4" /> Copy Setup Link
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/onboarding/setup/${prospect.id}`)}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl transition-colors text-sm font-bold shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+                      >
+                        Complete Setup Manually <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-emerald-400 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" /> Successfully Converted
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      This prospect has been converted to the {prospect.tier_selected?.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Standard'} tier.
+                    </p>
+                    <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm mt-4">
+                      <strong>Note:</strong> Automated client provisioning for this tier will be built in a later phase. For now, the KDS acts as an internal tracker.
+                    </div>
+                  </>
                 )}
               </div>
             )}
