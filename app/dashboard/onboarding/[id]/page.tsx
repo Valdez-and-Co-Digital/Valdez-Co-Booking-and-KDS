@@ -107,25 +107,19 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ id: s
   };
 
   const scheduleMeeting = async () => {
-    setIsProcessing(true);
-    // Call our Calendar API
-    const res = await fetch('/api/calendar', {
-      method: 'POST',
-      body: JSON.stringify({ prospectId: prospect?.id })
-    });
-    const data = await res.json();
-    if (res.status === 401 && data.error === 'google_auth_required') {
-      alert('Google Calendar connection missing or expired. Please Reconnect Google Calendar.');
-      setIsProcessing(false);
-      return;
-    }
+    if (!prospect) return;
     
-    if (data.success) {
-      await updateStatus('meeting_scheduled');
-    } else {
-      alert(data.error || 'Failed to schedule meeting');
-    }
-    setIsProcessing(false);
+    // Generate pre-filled Google Calendar URL
+    const baseUrl = 'https://calendar.google.com/calendar/r/eventedit';
+    const text = encodeURIComponent(`Discovery Call — ${prospect.business_name}`);
+    const details = encodeURIComponent(`Discovery call with ${prospect.contact_name}.\n\n(Remember to click "Add Google Meet video conferencing" before saving!)`);
+    const add = encodeURIComponent(prospect.contact_email);
+    
+    // Open in new tab
+    window.open(`${baseUrl}?text=${text}&details=${details}&add=${add}`, '_blank');
+    
+    // Optimistically update status
+    await updateStatus('meeting_scheduled');
   };
 
   const selectTier = async (tier: string) => {
