@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Plus, MoreHorizontal, Calendar, Phone, Mail, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Calendar, Phone, Mail, ChevronRight, Trash2, User } from 'lucide-react';
 import Link from 'next/link';
 
 type Prospect = {
@@ -102,7 +102,7 @@ export default function OnboardingPipelinePage() {
   }
 
   return (
-    <div className="min-h-full p-4 md:p-8 max-w-[1600px] mx-auto text-slate-200">
+    <div className="min-h-full p-4 md:p-8 max-w-[1200px] mx-auto text-slate-200">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-2">Onboarding Pipeline</h1>
@@ -120,65 +120,77 @@ export default function OnboardingPipelinePage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-200px)] md:overflow-x-auto pb-8">
+      <div className="flex flex-col gap-8 pb-12">
         {STAGES.map(stage => {
           const stageProspects = prospects.filter(p => p.status === stage.id);
           
           return (
             <div 
               key={stage.id}
-              className="flex-shrink-0 w-full md:w-80 flex flex-col bg-slate-900/40 md:bg-slate-900/60 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md p-5"
+              className="flex flex-col bg-white/5 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden"
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, stage.id as Prospect['status'])}
             >
-              <div className="flex items-center justify-between mb-5 px-1">
-                <h3 className="text-lg font-semibold text-slate-100 tracking-tight">{stage.label}</h3>
-                <span className="bg-cyan-500/10 text-cyan-400 text-sm px-3 py-1 rounded-full font-medium border border-cyan-500/20">
-                  {stageProspects.length}
+              <div className="flex items-center justify-between p-6 border-b border-white/10 bg-slate-900/40">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+                  <h3 className="text-xl font-bold text-white tracking-tight">{stage.label}</h3>
+                </div>
+                <span className="bg-cyan-500/10 text-cyan-400 px-4 py-1.5 rounded-full font-semibold border border-cyan-500/20 text-sm">
+                  {stageProspects.length} Prospect{stageProspects.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
-              <div className="flex flex-col md:overflow-y-auto space-y-4 md:flex-1">
+              <div className="flex flex-col p-6 space-y-4">
                 {stageProspects.map(prospect => (
                   <div
                     key={prospect.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, prospect.id)}
-                    className="group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/15 hover:to-white/10 border border-white/10 hover:border-cyan-500/50 shadow-lg rounded-2xl p-5 cursor-grab active:cursor-grabbing transition-all relative overflow-hidden flex flex-col gap-3"
+                    className="group bg-gradient-to-r from-white/5 to-transparent hover:bg-white/10 border border-white/5 hover:border-cyan-500/30 rounded-2xl p-4 cursor-grab active:cursor-grabbing transition-all relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                   >
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-cyan-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-l-2xl" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-l-2xl" />
                     
-                    <div className="flex justify-between items-start">
-                      <div>
+                    <div className="flex-1 flex flex-col md:flex-row md:items-center gap-4 md:gap-12 pl-2">
+                      <div className="min-w-[250px]">
                         <h4 className="font-bold text-white text-lg leading-tight mb-1">{prospect.business_name}</h4>
-                        <p className="text-sm font-medium text-slate-400">{prospect.contact_name}</p>
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                          <User className="w-3.5 h-3.5" />
+                          <span>{prospect.contact_name}</span>
+                        </div>
                       </div>
-                      <button 
-                        onClick={() => router.push(`/dashboard/onboarding/${prospect.id}`)}
-                        className="flex items-center justify-center w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-cyan-400 transition-colors border border-white/5"
-                        aria-label="View Details"
-                      >
-                        <ChevronRight className="w-6 h-6" />
-                      </button>
+
+                      <div className="flex items-center gap-6 text-sm text-slate-400 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-slate-500" />
+                          <span className="hidden lg:inline">{prospect.contact_email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-cyan-500/70" />
+                          <span>{new Date(prospect.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="flex items-center justify-between gap-4 mt-1 text-sm text-slate-400">
-                      <div className="flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
-                        <Calendar className="w-4 h-4 text-cyan-500" />
-                        <span className="font-medium">{new Date(prospect.created_at).toLocaleDateString()}</span>
-                      </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-3 md:pt-0 mt-2 md:mt-0">
+                      <select 
+                        value={prospect.status}
+                        onChange={(e) => handleStatusChange(prospect.id, e.target.value as Prospect['status'])}
+                        className="bg-black/20 border border-white/10 hover:border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer"
+                      >
+                        {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
                       
                       <div className="flex items-center gap-2">
-                        <select 
-                          value={prospect.status}
-                          onChange={(e) => handleStatusChange(prospect.id, e.target.value as Prospect['status'])}
-                          className="md:hidden bg-slate-800 border border-white/10 rounded-md px-2 py-1 text-xs text-white"
+                        <button 
+                          onClick={() => router.push(`/dashboard/onboarding/${prospect.id}`)}
+                          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-400 transition-colors border border-white/5 hover:border-cyan-500/30 rounded-lg text-sm font-medium"
                         >
-                          {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                        </select>
+                          View <ChevronRight className="w-4 h-4" />
+                        </button>
                         <button 
                           onClick={() => handleDelete(prospect.id)} 
-                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-400/20"
                           aria-label="Delete prospect"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -189,8 +201,8 @@ export default function OnboardingPipelinePage() {
                 ))}
                 
                 {stageProspects.length === 0 && (
-                  <div className="h-24 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-sm font-medium text-slate-500">
-                    Drop here
+                  <div className="h-24 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-sm font-medium text-slate-500 bg-white/[0.02]">
+                    Drop prospects here to move them to this stage
                   </div>
                 )}
               </div>
